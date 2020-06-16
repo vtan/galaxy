@@ -2,6 +2,7 @@ package galaxy
 
 import galaxy.bodies.{OrbitalState, SolarSystem}
 
+import org.lwjgl.glfw.GLFW._
 import org.lwjgl.nanovg.NanoVG._
 import org.lwjgl.nanovg.NVGColor
 import org.lwjgl.opengl.GL11C._
@@ -11,7 +12,7 @@ class Renderer(
   nvg: Long
 ) {
 
-  private val camera = Camera(
+  private var camera = Camera(
     worldPosition = V2.zero,
     screenCenter = 0.5 *: screenSize,
     worldToScreenScale = 200
@@ -24,7 +25,36 @@ class Renderer(
 
   private val orbitalStates = rootOrbitNode.orbitalStatesAt(time = 0)
 
-  def render(): Unit = {
+  private var lastCursorPosition: CursorPositionEvent = CursorPositionEvent(0, 0)
+  private var draggingMouse: Boolean = false
+
+  def render(events: List[GlfwEvent]): Unit = {
+    events.foreach {
+      case e @ CursorPositionEvent(x, y) =>
+        if (draggingMouse) {
+          val startPosition = V2(lastCursorPosition.x, lastCursorPosition.y)
+          val endPosition = V2(x, y)
+          val screenDiff = startPosition - endPosition
+          val worldDiff = camera.screenToVector(screenDiff)
+          camera = camera.copy(worldPosition = camera.worldPosition + worldDiff)
+        }
+        lastCursorPosition = e
+
+      case MouseButtonEvent(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, _) =>
+        draggingMouse = true
+
+      case MouseButtonEvent(GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, _) =>
+        draggingMouse = false
+
+      case ScrollEvent(_, y) =>
+        val zoomLevel = Math.cbrt(camera.worldToScreenScale)
+        val clamped = clamp(1.5, zoomLevel + 0.5 * y, 70)
+        val newScale = clamped * clamped * clamped
+        camera = camera.copy(worldToScreenScale = newScale)
+
+      case _ => ()
+    }
+
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 

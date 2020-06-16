@@ -19,13 +19,30 @@ import org.lwjgl.opengl.GL33C._
 import org.lwjgl.system.MemoryStack._
 import org.lwjgl.system.MemoryUtil._
 
+import java.util.concurrent.atomic.AtomicReference
+
 object Main {
   private val screenWidth = 1728
   private val screenHeight = 972
   private var nvg: Long = 0
 
+  private val eventsRef = new AtomicReference(List.empty[GlfwEvent])
+
   def main(args: Array[String]): Unit = {
     val window = createWindow()
+
+    glfwSetCursorPosCallback(
+      window,
+      (_, x, y) => eventsRef.updateAndGet(CursorPositionEvent(x, y) :: _)
+    )
+    glfwSetMouseButtonCallback(
+      window,
+      (_, button, action, modifiers) => eventsRef.updateAndGet(MouseButtonEvent(button, action, modifiers) :: _)
+    )
+    glfwSetScrollCallback(
+      window,
+      (_, x, y) => eventsRef.updateAndGet(ScrollEvent(x, y) :: _)
+    )
 
     GL.createCapabilities()
     nvg = nvgCreate(NVG_ANTIALIAS)
@@ -85,7 +102,8 @@ object Main {
     var fpsWindowLength = 0
 
     while (!glfwWindowShouldClose(window)) {
-      renderer.render()
+      val events = eventsRef.getAndSet(Nil).reverse
+      renderer.render(events)
 
       glfwSwapBuffers(window)
       glfwPollEvents()

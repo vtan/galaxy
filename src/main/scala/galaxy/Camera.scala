@@ -12,4 +12,7 @@ final case class Camera(
 
   def pointToScreen(point: V2[Double]): V2[Double] =
     (point - worldPosition) * worldtoScreenScaleVector + screenCenter
+
+  def screenToVector(vector: V2[Double]): V2[Double] =
+    vector / worldtoScreenScaleVector
 }
