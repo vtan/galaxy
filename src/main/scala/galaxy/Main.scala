@@ -4,9 +4,7 @@ import org.lwjgl.glfw._
 import org.lwjgl.opengl._
 import org.lwjgl.glfw.Callbacks._
 import org.lwjgl.glfw.GLFW._
-import org.lwjgl.nanovg.NVGColor
-import org.lwjgl.nanovg.NanoVG._
-import org.lwjgl.nanovg.NanoVGGL3.nvgCreate
+import org.lwjgl.nanovg.NanoVGGL3._
 import org.lwjgl.opengl.GL11C._
 import org.lwjgl.opengl.GL12C._
 import org.lwjgl.opengl.GL13C._
@@ -30,7 +28,7 @@ object Main {
     val window = createWindow()
 
     GL.createCapabilities()
-    nvg = nvgCreate(0)
+    nvg = nvgCreate(NVG_ANTIALIAS)
     render(window)
 
     glfwFreeCallbacks(window)
@@ -77,26 +75,17 @@ object Main {
   }
 
   private def render(window: Long): Unit = {
-    val color = NVGColor.create()
-    color.r(255)
-    color.g(192)
-    color.b(0)
-    color.a(255)
+    val renderer = new Renderer(
+      screenSize = V2(screenWidth.toDouble, screenHeight.toDouble),
+      nvg
+    )
 
     var lastFrameTime = 0.0
     var fpsWindowTotalTime = 0.0
     var fpsWindowLength = 0
 
     while (!glfwWindowShouldClose(window)) {
-      glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
-      nvgBeginFrame(nvg, screenWidth, screenHeight, 1)
-      nvgBeginPath(nvg)
-      nvgRect(nvg, 100, 100, 120, 30)
-      nvgFillColor(nvg, color)
-      nvgFill(nvg)
-      nvgEndFrame(nvg)
+      renderer.render()
 
       glfwSwapBuffers(window)
       glfwPollEvents()
