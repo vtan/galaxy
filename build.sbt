@@ -3,7 +3,22 @@ version := "0.1"
 scalaVersion := "2.13.2"
 
 val lwjglVersion = "3.2.3"
-val natives = "natives-macos"
+
+val arch = {
+  val os = sys.props("os.name").toLowerCase
+  if (os.contains("linux")) {
+    "linux"
+  } else if (os.contains("mac")) {
+    javaOptions in run += "-XstartOnFirstThread"
+    "macos"
+  } else if (os.contains("windows")) {
+    "windows"
+  } else {
+    throw new Exception(s"Cannot determine platform for OS: $os")
+  }
+}
+
+val natives = "natives-" + arch
 
 libraryDependencies ++= Vector(
   "org.lwjgl" % "lwjgl" % lwjglVersion,
@@ -19,7 +34,6 @@ libraryDependencies ++= Vector(
 mainClass := Some("galaxy.Main")
 
 fork in run := true
-javaOptions in run += "-XstartOnFirstThread"
 
 scalacOptions ++= Seq(
   "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
