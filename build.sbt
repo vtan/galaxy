@@ -10,6 +10,8 @@ libraryDependencies ++= Vector(
   "org.lwjgl" % "lwjgl" % lwjglVersion classifier natives,
   "org.lwjgl" % "lwjgl-glfw" % lwjglVersion,
   "org.lwjgl" % "lwjgl-glfw" % lwjglVersion classifier natives,
+  "org.lwjgl" % "lwjgl-nanovg" % lwjglVersion,
+  "org.lwjgl" % "lwjgl-nanovg" % lwjglVersion classifier natives,
   "org.lwjgl" % "lwjgl-opengl" % lwjglVersion,
   "org.lwjgl" % "lwjgl-opengl" % lwjglVersion classifier natives
 )
