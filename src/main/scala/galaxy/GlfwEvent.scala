@@ -4,7 +4,9 @@ sealed trait GlfwEvent
 
 final case class CursorPositionEvent(
   x: Double,
-  y: Double
+  y: Double,
+  xDiff: Double,
+  yDiff: Double
 ) extends GlfwEvent
 
 final case class MouseButtonEvent(

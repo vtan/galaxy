@@ -1,9 +1,12 @@
 package galaxy
 
+import galaxy.bodies.SolarSystem
+
 import org.lwjgl.glfw._
 import org.lwjgl.opengl._
 import org.lwjgl.glfw.Callbacks._
 import org.lwjgl.glfw.GLFW._
+import org.lwjgl.nanovg.NanoVG._
 import org.lwjgl.nanovg.NanoVGGL3._
 import org.lwjgl.opengl.GL11C._
 import org.lwjgl.opengl.GL12C._
@@ -27,22 +30,22 @@ object Main {
   private var nvg: Long = 0
 
   private val eventsRef = new AtomicReference(List.empty[GlfwEvent])
+  private val lastCursorPosition = new AtomicReference(V2[Double](0, 0))
 
   def main(args: Array[String]): Unit = {
     val window = createWindow()
 
-    glfwSetCursorPosCallback(
-      window,
-      (_, x, y) => eventsRef.updateAndGet(CursorPositionEvent(x, y) :: _)
-    )
-    glfwSetMouseButtonCallback(
-      window,
-      (_, button, action, modifiers) => eventsRef.updateAndGet(MouseButtonEvent(button, action, modifiers) :: _)
-    )
-    glfwSetScrollCallback(
-      window,
-      (_, x, y) => eventsRef.updateAndGet(ScrollEvent(x, y) :: _)
-    )
+    glfwSetCursorPosCallback(window, (_, x, y) => {
+      val newPosition = V2(x, y)
+      val V2(xPrev, yPrev) = lastCursorPosition.getAndSet(newPosition)
+      val _ = eventsRef.updateAndGet(CursorPositionEvent(x, y, x - xPrev, y - yPrev) :: _)
+    })
+    glfwSetMouseButtonCallback(window, (_, button, action, modifiers) => {
+      val _ = eventsRef.updateAndGet(MouseButtonEvent(button, action, modifiers) :: _)
+    })
+    glfwSetScrollCallback(window, (_, x, y) => {
+      val _ = eventsRef.updateAndGet(ScrollEvent(x, y) :: _)
+    })
 
     GL.createCapabilities()
     nvg = nvgCreate(NVG_ANTIALIAS)
@@ -92,9 +95,29 @@ object Main {
   }
 
   private def render(window: Long): Unit = {
-    val renderer = new Renderer(
-      screenSize = V2(screenWidth.toDouble, screenHeight.toDouble),
-      nvg
+    val font = nvgCreateFont(nvg, "Roboto", "assets/roboto/Roboto-Regular.ttf")
+    nvgFontFaceId(nvg, font)
+
+    val screenSize = V2(screenWidth.toDouble, screenHeight.toDouble)
+    var renderContext = new RenderContext(
+      nvg = nvg,
+      screenSize = screenSize,
+
+      gameState = GameState(
+        bodies = SolarSystem.bodies,
+        rootOrbitNode = SolarSystem.rootOrbitNode,
+        time = 0
+      ),
+      uiState = UiState(
+        camera = Camera(
+          worldPosition = V2.zero,
+          screenCenter = 0.5 *: screenSize,
+          worldToScreenScale = 200
+        ),
+        draggingCamera = false
+      ),
+      gameStateUpdates = List.empty,
+      uiStateUpdates = List.empty
     )
 
     var lastFrameTime = 0.0
@@ -103,7 +126,8 @@ object Main {
 
     while (!glfwWindowShouldClose(window)) {
       val events = eventsRef.getAndSet(Nil).reverse
-      renderer.render(events)
+      Renderer.render(events)(renderContext)
+      renderContext = renderContext.applyUpdates
 
       glfwSwapBuffers(window)
       glfwPollEvents()

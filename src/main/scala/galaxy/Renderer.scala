@@ -1,76 +1,56 @@
 package galaxy
 
-import galaxy.bodies.{OrbitNode, OrbitalState, SolarSystem}
+import galaxy.bodies.{OrbitNode, OrbitalState}
+
 import org.lwjgl.glfw.GLFW._
 import org.lwjgl.nanovg.NanoVG._
-import org.lwjgl.nanovg.NVGColor
 import org.lwjgl.opengl.GL11C._
 
-class Renderer(
-  screenSize: V2[Double],
-  nvg: Long
-) {
+object Renderer {
 
-  private var camera = Camera(
-    worldPosition = V2.zero,
-    screenCenter = 0.5 *: screenSize,
-    worldToScreenScale = 200
-  )
-  private var gameState = GameState(
-    bodies = SolarSystem.bodies,
-    rootOrbitNode = SolarSystem.rootOrbitNode,
-    time = 0
-  )
+  def render(events: List[GlfwEvent])(implicit rc: RenderContext): Unit = {
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    nvgBeginFrame(rc.nvg, rc.screenSize.x.toFloat, rc.screenSize.y.toFloat, 1)
+    nvgFontSize(rc.nvg, 20)
+    renderOrbitNode(rc.gameState.rootOrbitNode, parentCenterOnScreen = None)
+    nvgEndFrame(rc.nvg)
 
-  private val bodyColor = createColor(1.0f, 1.0f, 0, 1.0f)
-  private val orbitColor = createColor(1.0f, 0.75f, 0, 0.5f)
-  private val textColor = createColor(1, 1, 1, 1)
-
-  private val font = nvgCreateFont(nvg, "Roboto", "assets/roboto/Roboto-Regular.ttf")
-  nvgFontFaceId(nvg, font)
-
-  private var lastCursorPosition: CursorPositionEvent = CursorPositionEvent(0, 0)
-  private var draggingMouse: Boolean = false
-
-  def render(events: List[GlfwEvent]): Unit = {
-    gameState = StepLogic.stepTime(diff = 60 * 60)(gameState)
+    rc.updateGameState(StepLogic.stepTime(diff = 60 * 60))
     events.foreach {
-      case e @ CursorPositionEvent(x, y) =>
-        if (draggingMouse) {
-          val startPosition = V2(lastCursorPosition.x, lastCursorPosition.y)
-          val endPosition = V2(x, y)
-          val screenDiff = startPosition - endPosition
-          val worldDiff = camera.screenToVector(screenDiff)
-          camera = camera.copy(worldPosition = camera.worldPosition + worldDiff)
+      case CursorPositionEvent(_, _, xDiff, yDiff) =>
+        rc.updateUiState { ui =>
+          if (ui.draggingCamera) {
+            val screenDiff = V2(xDiff, yDiff)
+            val worldDiff = ui.camera.screenToVector(screenDiff)
+            ui.copy(camera = ui.camera.copy(worldPosition = ui.camera.worldPosition + worldDiff))
+          } else {
+            ui
+          }
         }
-        lastCursorPosition = e
 
       case MouseButtonEvent(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, _) =>
-        draggingMouse = true
+        rc.updateUiState(_.copy(draggingCamera = true))
 
       case MouseButtonEvent(GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, _) =>
-        draggingMouse = false
+        rc.updateUiState(_.copy(draggingCamera = false))
 
       case ScrollEvent(_, y) =>
-        val zoomLevel = Math.cbrt(camera.worldToScreenScale)
-        val clamped = clamp(1.5, zoomLevel + 0.5 * y, 70)
-        val newScale = clamped * clamped * clamped
-        camera = camera.copy(worldToScreenScale = newScale)
+        rc.updateUiState { ui =>
+          val zoomLevel = Math.cbrt(ui.camera.worldToScreenScale)
+          val clamped = clamp(1.5, zoomLevel + 0.5 * y, 70)
+          val newScale = clamped * clamped * clamped
+          ui.copy(camera = ui.camera.copy(worldToScreenScale = newScale))
+        }
 
       case _ => ()
     }
-
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
-    nvgBeginFrame(nvg, screenSize.x.toFloat, screenSize.y.toFloat, 1)
-    nvgFontSize(nvg, 20)
-    renderOrbitNode(gameState.rootOrbitNode, parentCenterOnScreen = None)
-    nvgEndFrame(nvg)
   }
 
-  private def renderOrbitNode(orbitNode: OrbitNode, parentCenterOnScreen: Option[V2[Float]]): Unit = {
-    val OrbitalState(position, orbitCenter) = gameState.orbitalStates(orbitNode.bodyId)
+  private def renderOrbitNode(orbitNode: OrbitNode, parentCenterOnScreen: Option[V2[Float]])(implicit rc: RenderContext): Unit = {
+    val gs = rc.gameState
+    val camera = rc.uiState.camera
+    val OrbitalState(position, orbitCenter) = gs.orbitalStates(orbitNode.bodyId)
 
     val bodyCenter = camera.pointToScreen(position).map(_.toFloat)
     val distanceSqFromParent = parentCenterOnScreen.map(p => (p - bodyCenter).lengthSq)
@@ -78,17 +58,17 @@ class Renderer(
       case Some(distSq) if distSq < 8 * 8 =>
         ()
       case Some(distSq) if distSq < 16 * 16 =>
-        nvgBeginPath(nvg)
-        nvgCircle(nvg, bodyCenter.x, bodyCenter.y, 4)
-        nvgStrokeColor(nvg, bodyColor)
-        nvgStroke(nvg)
+        nvgBeginPath(rc.nvg)
+        nvgCircle(rc.nvg, bodyCenter.x, bodyCenter.y, 4)
+        nvgStrokeColor(rc.nvg, Colors.body)
+        nvgStroke(rc.nvg)
       case _ =>
-        nvgBeginPath(nvg)
-        nvgCircle(nvg, bodyCenter.x, bodyCenter.y, 8)
-        nvgStrokeColor(nvg, bodyColor)
-        nvgStroke(nvg)
-        nvgFillColor(nvg, textColor)
-        nvgText(nvg, bodyCenter.x - 8, bodyCenter.y + 24, gameState.bodies(orbitNode.bodyId).name)
+        nvgBeginPath(rc.nvg)
+        nvgCircle(rc.nvg, bodyCenter.x, bodyCenter.y, 8)
+        nvgStrokeColor(rc.nvg, Colors.body)
+        nvgStroke(rc.nvg)
+        nvgFillColor(rc.nvg, Colors.text)
+        nvgText(rc.nvg, bodyCenter.x - 8, bodyCenter.y + 24, gs.bodies(orbitNode.bodyId).name)
 
         orbitNode.children.foreach(renderOrbitNode(_, Some(bodyCenter)))
     }
@@ -96,18 +76,10 @@ class Renderer(
     val orbitLineRadius = camera.scalarToScreen(orbitNode.orbitRadius).toFloat
     if (orbitLineRadius > 12 && orbitLineRadius < 40_000) {
       val orbitLineCenter = camera.pointToScreen(orbitCenter).map(_.toFloat)
-      nvgBeginPath(nvg)
-      nvgCircle(nvg, orbitLineCenter.x, orbitLineCenter.y, orbitLineRadius)
-      nvgStrokeColor(nvg, orbitColor)
-      nvgStroke(nvg)
+      nvgBeginPath(rc.nvg)
+      nvgCircle(rc.nvg, orbitLineCenter.x, orbitLineCenter.y, orbitLineRadius)
+      nvgStrokeColor(rc.nvg, Colors.orbit)
+      nvgStroke(rc.nvg)
     }
-  }
-
-  private def createColor(r: Float, g: Float, b: Float, a: Float): NVGColor = {
-    val c = NVGColor.create()
-    c.r(r)
-    c.g(g)
-    c.b(b)
-    c.a(a)
   }
 }
