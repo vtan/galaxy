@@ -1,3 +1,8 @@
 package galaxy.bodies
 
-sealed trait Body
+import galaxy.Id
+
+final case class Body(
+  id: Id[Body],
+  name: String
+)

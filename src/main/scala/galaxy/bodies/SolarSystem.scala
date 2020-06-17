@@ -6,6 +6,32 @@ object SolarSystem {
 
   private val pi: Double = Math.PI
 
+  val bodies: Map[Id[Body], Body] = Seq(
+    Body(id = Id(8), name = "Sol"),
+    Body(id = Id(0), name = "Mercury"),
+    Body(id = Id(1), name = "Venus"),
+    Body(id = Id(2), name = "Earth"),
+    Body(id = Id(9), name = "Luna"),
+    Body(id = Id(3), name = "Mars"),
+    Body(id = Id(10), name = "Phobos"),
+    Body(id = Id(11), name = "Deimos"),
+    Body(id = Id(4), name = "Jupiter"),
+    Body(id = Id(12), name = "Io"),
+    Body(id = Id(13), name = "Europa"),
+    Body(id = Id(14), name = "Ganymede"),
+    Body(id = Id(15), name = "Callisto"),
+    Body(id = Id(5), name = "Saturn"),
+    Body(id = Id(16), name = "Mimas"),
+    Body(id = Id(17), name = "Enceladus"),
+    Body(id = Id(18), name = "Tethys"),
+    Body(id = Id(19), name = "Dione"),
+    Body(id = Id(20), name = "Rhea"),
+    Body(id = Id(21), name = "Titan"),
+    Body(id = Id(22), name = "Iapetus"),
+    Body(id = Id(6), name = "Uranus"),
+    Body(id = Id(7), name = "Neptune")
+  ).map(b => b.id -> b).toMap
+
   val rootOrbitNode: OrbitNode = OrbitNode(
     bodyId = Id(8),
     orbitRadius = 0,

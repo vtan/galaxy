@@ -9,7 +9,6 @@ val arch = {
   if (os.contains("linux")) {
     "linux"
   } else if (os.contains("mac")) {
-    javaOptions in run += "-XstartOnFirstThread"
     "macos"
   } else if (os.contains("windows")) {
     "windows"
@@ -34,6 +33,7 @@ libraryDependencies ++= Vector(
 mainClass := Some("galaxy.Main")
 
 fork in run := true
+javaOptions in run ++= (if (arch == "macos") Seq("-XstartOnFirstThread") else Seq())
 
 scalacOptions ++= Seq(
   "-deprecation",                      // Emit warning and location for usages of deprecated APIs.

@@ -17,6 +17,12 @@ final case class V2[T](x: T, y: T) {
   def *:(scalar: T)(implicit num: Numeric[T]): V2[T] =
     V2(num.times(scalar, x), num.times(scalar, y))
 
+  def dot(rhs: V2[T])(implicit num: Numeric[T]): T =
+    num.plus(num.times(x, rhs.x), num.times(y, rhs.y))
+
+  def lengthSq(implicit num: Numeric[T]): T =
+    this dot this
+
   def map[U](f: T => U): V2[U] =
     V2(f(x), f(y))
 }
