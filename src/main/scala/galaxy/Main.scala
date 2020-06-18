@@ -99,7 +99,8 @@ object Main {
     nvgFontFaceId(nvg, font)
 
     val screenSize = V2(screenWidth.toDouble, screenHeight.toDouble)
-    var renderContext = new RenderContext(
+
+    var renderContext = RenderContext(
       nvg = nvg,
       screenSize = screenSize,
 
@@ -117,7 +118,8 @@ object Main {
         draggingCamera = false
       ),
       gameStateUpdates = List.empty,
-      uiStateUpdates = List.empty
+      uiStateUpdates = List.empty,
+      events = List.empty
     )
 
     var lastFrameTime = 0.0
@@ -126,8 +128,8 @@ object Main {
 
     while (!glfwWindowShouldClose(window)) {
       val events = eventsRef.getAndSet(Nil).reverse
-      Renderer.render(events)(renderContext)
-      renderContext = renderContext.applyUpdates
+      renderContext = renderContext.beginFrame(events)
+      Renderer.render()(renderContext)
 
       glfwSwapBuffers(window)
       glfwPollEvents()
