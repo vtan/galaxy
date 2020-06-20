@@ -1,6 +1,8 @@
 package galaxy
 
-import galaxy.bodies.SolarSystem
+import galaxy.common.V2
+import galaxy.game.{AppState, GameState, Renderer, UiState}
+import galaxy.rendering.{CursorPositionEvent, GlfwEvent, LayoutContext, MouseButtonEvent, RenderContext, ScrollEvent}
 
 import org.lwjgl.glfw._
 import org.lwjgl.opengl._
@@ -41,7 +43,8 @@ object Main {
       val _ = eventsRef.updateAndGet(CursorPositionEvent(x, y, x - xPrev, y - yPrev) :: _)
     })
     glfwSetMouseButtonCallback(window, (_, button, action, modifiers) => {
-      val _ = eventsRef.updateAndGet(MouseButtonEvent(button, action, modifiers) :: _)
+      val V2(x, y) = lastCursorPosition.get
+      val _ = eventsRef.updateAndGet(MouseButtonEvent(button, action, modifiers, x, y) :: _)
     })
     glfwSetScrollCallback(window, (_, x, y) => {
       val _ = eventsRef.updateAndGet(ScrollEvent(x, y) :: _)
@@ -100,26 +103,17 @@ object Main {
 
     val screenSize = V2(screenWidth.toDouble, screenHeight.toDouble)
 
+    val appState = AppState(
+      gameState = GameState.initial,
+      uiState = UiState.initial(screenSize)
+    )
     var renderContext = RenderContext(
       nvg = nvg,
       screenSize = screenSize,
-
-      gameState = GameState(
-        bodies = SolarSystem.bodies,
-        rootOrbitNode = SolarSystem.rootOrbitNode,
-        time = 0
-      ),
-      uiState = UiState(
-        camera = Camera(
-          worldPosition = V2.zero,
-          screenCenter = 0.5 *: screenSize,
-          worldToScreenScale = 200
-        ),
-        draggingCamera = false
-      ),
-      gameStateUpdates = List.empty,
-      uiStateUpdates = List.empty,
-      events = List.empty
+      appState = appState,
+      dispatchedUpdates = List.empty,
+      events = List.empty,
+      layoutContext = LayoutContext.initial
     )
 
     var lastFrameTime = 0.0

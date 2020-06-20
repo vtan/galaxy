@@ -1,6 +1,6 @@
-package galaxy.bodies
+package galaxy.game.bodies
 
-import galaxy.V2
+import galaxy.common.V2
 
 final case class OrbitalState(
   position: V2[Double],

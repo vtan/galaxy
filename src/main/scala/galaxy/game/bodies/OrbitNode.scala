@@ -1,6 +1,6 @@
-package galaxy.bodies
+package galaxy.game.bodies
 
-import galaxy.{Id, V2}
+import galaxy.common.{Id, V2}
 
 final case class OrbitNode(
   bodyId: Id[Body],

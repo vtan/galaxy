@@ -1,4 +1,4 @@
-package galaxy
+package galaxy.game
 
 object StepLogic {
 

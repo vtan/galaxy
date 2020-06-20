@@ -1,22 +1,25 @@
-package galaxy
+package galaxy.game
 
-import galaxy.bodies.{OrbitalState, OrbitNode}
+import galaxy.clamp
+import galaxy.common.V2
+import galaxy.game.bodies.{OrbitalState, OrbitNode}
+import galaxy.rendering.{Colors, CursorPositionEvent, MouseButtonEvent, RenderContext, ScrollEvent}
 
 import org.lwjgl.glfw.GLFW._
 import org.lwjgl.nanovg.NanoVG._
 
 object SystemMap {
 
-  def render()(implicit rc: RenderContext): Unit = {
-    renderOrbitNode(rc.gameState.rootOrbitNode, parentCenterOnScreen = None)
-    rc.updateGameState(StepLogic.stepTime(diff = 60 * 60))
+  def render()(implicit rc: RenderContext[AppState]): Unit = {
+    renderOrbitNode(rc.appState.gameState.rootOrbitNode, parentCenterOnScreen = None)
+    rc.dispatch(_.mapGameState(StepLogic.stepTime(diff = 60 * 60)))
     handleEvents()
   }
 
-  private def handleEvents()(implicit rc: RenderContext): Unit =
+  private def handleEvents()(implicit rc: RenderContext[AppState]): Unit =
     rc.events.foreach {
       case CursorPositionEvent(_, _, xDiff, yDiff) =>
-        rc.updateUiState { ui =>
+        rc.dispatch(_.mapUiState { ui =>
           if (ui.draggingCamera) {
             val screenDiff = V2(xDiff, yDiff)
             val worldDiff = ui.camera.screenToVector(screenDiff)
@@ -24,28 +27,28 @@ object SystemMap {
           } else {
             ui
           }
-        }
+        })
 
-      case MouseButtonEvent(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, _) =>
-        rc.updateUiState(_.copy(draggingCamera = true))
+      case MouseButtonEvent(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, _, _, _) =>
+        rc.dispatch(_.mapUiState(_.copy(draggingCamera = true)))
 
-      case MouseButtonEvent(GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, _) =>
-        rc.updateUiState(_.copy(draggingCamera = false))
+      case MouseButtonEvent(GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, _, _, _) =>
+        rc.dispatch(_.mapUiState(_.copy(draggingCamera = false)))
 
       case ScrollEvent(_, y) =>
-        rc.updateUiState { ui =>
+        rc.dispatch(_.mapUiState { ui =>
           val zoomLevel = Math.cbrt(ui.camera.worldToScreenScale)
           val clamped = clamp(1.5, zoomLevel + 0.5 * y, 70)
           val newScale = clamped * clamped * clamped
           ui.copy(camera = ui.camera.copy(worldToScreenScale = newScale))
-        }
+        })
 
       case _ => ()
     }
 
-  private def renderOrbitNode(orbitNode: OrbitNode, parentCenterOnScreen: Option[V2[Float]])(implicit rc: RenderContext): Unit = {
-    val gs = rc.gameState
-    val camera = rc.uiState.camera
+  private def renderOrbitNode(orbitNode: OrbitNode, parentCenterOnScreen: Option[V2[Float]])(implicit rc: RenderContext[AppState]): Unit = {
+    val gs = rc.appState.gameState
+    val camera = rc.appState.uiState.camera
     val OrbitalState(position, orbitCenter) = gs.orbitalStates(orbitNode.bodyId)
 
     val bodyCenter = camera.pointToScreen(position).map(_.toFloat)

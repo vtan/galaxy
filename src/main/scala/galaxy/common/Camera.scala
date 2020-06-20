@@ -1,4 +1,4 @@
-package galaxy
+package galaxy.common
 
 final case class Camera(
   worldPosition: V2[Double],

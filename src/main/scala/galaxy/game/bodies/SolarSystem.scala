@@ -1,6 +1,6 @@
-package galaxy.bodies
+package galaxy.game.bodies
 
-import galaxy.Id
+import galaxy.common.Id
 
 object SolarSystem {
 

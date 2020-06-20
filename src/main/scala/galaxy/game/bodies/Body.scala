@@ -1,6 +1,6 @@
-package galaxy.bodies
+package galaxy.game.bodies
 
-import galaxy.Id
+import galaxy.common.Id
 
 final case class Body(
   id: Id[Body],

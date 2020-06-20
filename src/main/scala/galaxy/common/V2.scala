@@ -1,4 +1,4 @@
-package galaxy
+package galaxy.common
 
 final case class V2[T](x: T, y: T) {
 
@@ -32,6 +32,6 @@ object V2 {
   def zero[T](implicit num: Numeric[T]): V2[T] =
     V2(num.zero, num.zero)
 
-  def unitWithAngle(angle: Double):  V2[Double] =
+  def unitWithAngle(angle: Double): V2[Double] =
     V2(Math.cos(angle), Math.sin(angle))
 }

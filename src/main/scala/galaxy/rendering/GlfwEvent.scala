@@ -1,4 +1,4 @@
-package galaxy
+package galaxy.rendering
 
 sealed trait GlfwEvent
 
@@ -12,7 +12,9 @@ final case class CursorPositionEvent(
 final case class MouseButtonEvent(
   button: Int,
   action: Int,
-  modifiers: Int
+  modifiers: Int,
+  x: Double,
+  y: Double
 ) extends GlfwEvent
 
 final case class ScrollEvent(
