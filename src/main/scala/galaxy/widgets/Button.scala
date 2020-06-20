@@ -24,6 +24,6 @@ object Button {
     nvgStroke(rc.nvg)
 
     nvgFillColor(rc.nvg, Colors.text)
-    nvgText(rc.nvg, x + 4, y + 0.75f * h, text)
+    val _ = nvgText(rc.nvg, x + 4, y + 0.75f * h, text)
   }
 }

@@ -10,26 +10,13 @@ import org.lwjgl.glfw.Callbacks._
 import org.lwjgl.glfw.GLFW._
 import org.lwjgl.nanovg.NanoVG._
 import org.lwjgl.nanovg.NanoVGGL3._
-import org.lwjgl.opengl.GL11C._
-import org.lwjgl.opengl.GL12C._
-import org.lwjgl.opengl.GL13C._
-import org.lwjgl.opengl.GL14C._
-import org.lwjgl.opengl.GL15C._
-import org.lwjgl.opengl.GL20C._
-import org.lwjgl.opengl.GL21C._
-import org.lwjgl.opengl.GL30C._
-import org.lwjgl.opengl.GL31C._
-import org.lwjgl.opengl.GL32C._
-import org.lwjgl.opengl.GL33C._
 import org.lwjgl.system.MemoryStack._
 import org.lwjgl.system.MemoryUtil._
 
 import java.util.concurrent.atomic.AtomicReference
 
 object Main {
-  private val screenWidth = 1728
-  private val screenHeight = 972
-  private var nvg: Long = 0
+  private val requestedWindowSize = V2(1728, 972)
 
   private val eventsRef = new AtomicReference(List.empty[GlfwEvent])
   private val lastCursorPosition = new AtomicReference(V2[Double](0, 0))
@@ -51,8 +38,8 @@ object Main {
     })
 
     GL.createCapabilities()
-    nvg = nvgCreate(NVG_ANTIALIAS)
-    render(window)
+    val nvg = nvgCreate(NVG_ANTIALIAS)
+    render(window, nvg)
 
     glfwFreeCallbacks(window)
     glfwDestroyWindow(window)
@@ -72,7 +59,7 @@ object Main {
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE)
 
-    val window = glfwCreateWindow(screenWidth, screenHeight, "Hello World!", NULL, NULL)
+    val window = glfwCreateWindow(requestedWindowSize.x, requestedWindowSize.y, "Hello World!", NULL, NULL)
     if (window == NULL) {
       throw new RuntimeException("Failed to create the GLFW window")
     }
@@ -97,23 +84,34 @@ object Main {
     window
   }
 
-  private def render(window: Long): Unit = {
+  private def render(window: Long, nvg: Long): Unit = {
     val font = nvgCreateFont(nvg, "Roboto", "assets/roboto/Roboto-Regular.ttf")
     nvgFontFaceId(nvg, font)
 
-    val screenSize = V2(screenWidth.toDouble, screenHeight.toDouble)
+    val windowWidth = Array(0)
+    val windowHeight = Array(0)
+    val framebufferWidth = Array(0)
+    val framebufferHeight = Array(0)
+    glfwGetWindowSize(window, windowWidth, windowHeight)
+    glfwGetFramebufferSize(window, framebufferWidth, framebufferHeight)
+    val pixelRatio = framebufferWidth(0).toFloat / windowWidth(0).toFloat
+
+    val screenSize = V2(windowWidth(0).toFloat, windowHeight(0).toFloat)
+    val uiFramebuffer = nvgluCreateFramebuffer(nvg, framebufferWidth(0), framebufferHeight(0), 0)
 
     val appState = AppState(
       gameState = GameState.initial,
-      uiState = UiState.initial(screenSize)
+      uiState = UiState.initial(screenSize.map(_.toDouble))
     )
     var renderContext = RenderContext(
       nvg = nvg,
+      pixelRatio = pixelRatio,
       screenSize = screenSize,
       appState = appState,
       dispatchedUpdates = List.empty,
       events = List.empty,
-      layoutContext = LayoutContext.initial
+      layoutContext = LayoutContext.initial,
+      uiFramebuffer = uiFramebuffer
     )
 
     var lastFrameTime = 0.0

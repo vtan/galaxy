@@ -2,13 +2,19 @@ package galaxy.rendering
 
 import galaxy.common.V2
 
+import org.lwjgl.nanovg.NVGLUFramebuffer
+
 final case class RenderContext[T](
   nvg: Long,
-  screenSize: V2[Double],
+  pixelRatio: Float,
+  screenSize: V2[Float],
+
   appState: T,
   var dispatchedUpdates: List[T => T],
   var events: List[GlfwEvent],
-  layoutContext: LayoutContext
+
+  layoutContext: LayoutContext,
+  uiFramebuffer: NVGLUFramebuffer
 ) {
 
   def dispatch(update: T => T): Unit =
