@@ -2,8 +2,8 @@ package galaxy.game
 
 import galaxy.clamp
 import galaxy.common.V2
-import galaxy.game.bodies.{OrbitalState, OrbitNode}
-import galaxy.rendering.{Colors, CursorPositionEvent, MouseButtonEvent, RenderContext, ScrollEvent}
+import galaxy.game.bodies.{BodyType, OrbitNode, OrbitalState}
+import galaxy.rendering._
 
 import org.lwjgl.glfw.GLFW._
 import org.lwjgl.nanovg.NanoVG._
@@ -56,20 +56,27 @@ object SystemMap {
     distanceSqFromParent match {
       case Some(distSq) if distSq < 8 * 8 =>
         ()
-      case Some(distSq) if distSq < 16 * 16 =>
+      case distSqOpt =>
+        val small = distSqOpt.exists(_ < 16 * 16)
+        val body = gs.bodies(orbitNode.bodyId)
         nvgBeginPath(rc.nvg)
-        nvgCircle(rc.nvg, bodyCenter.x, bodyCenter.y, 4)
-        nvgStrokeColor(rc.nvg, Colors.body)
+        if (body.bodyType == BodyType.Star) {
+          nvgTranslate(rc.nvg, bodyCenter.x, bodyCenter.y)
+          nvgScale(rc.nvg, 12, 12)
+          starPath.draw(rc.nvg)
+          nvgResetTransform(rc.nvg)
+        } else {
+          nvgCircle(rc.nvg, bodyCenter.x, bodyCenter.y, if (small) 4 else 8)
+        }
+        nvgStrokeColor(rc.nvg, Colors.bodyColors(body.bodyType))
         nvgStroke(rc.nvg)
-      case _ =>
-        nvgBeginPath(rc.nvg)
-        nvgCircle(rc.nvg, bodyCenter.x, bodyCenter.y, 8)
-        nvgStrokeColor(rc.nvg, Colors.body)
-        nvgStroke(rc.nvg)
-        nvgFillColor(rc.nvg, Colors.text)
-        nvgText(rc.nvg, bodyCenter.x - 8, bodyCenter.y + 24, gs.bodies(orbitNode.bodyId).name)
 
-        orbitNode.children.foreach(renderOrbitNode(_, Some(bodyCenter)))
+        if (!small) {
+          nvgFillColor(rc.nvg, Colors.text)
+          nvgText(rc.nvg, bodyCenter.x - 8, bodyCenter.y + 24, body.name)
+
+          orbitNode.children.foreach(renderOrbitNode(_, Some(bodyCenter)))
+        }
     }
 
     val orbitLineRadius = camera.scalarToScreen(orbitNode.orbitRadius).toFloat
@@ -81,4 +88,9 @@ object SystemMap {
       nvgStroke(rc.nvg)
     }
   }
+
+  private val starPath: Path = Path(
+    V2(1, 0), V2(0.2, 0.2), V2(0, 1), V2(-0.2, 0.2),
+    V2(-1, 0), V2(-0.2, -0.2), V2(0, -1), V2(0.2, -0.2)
+  )
 }
