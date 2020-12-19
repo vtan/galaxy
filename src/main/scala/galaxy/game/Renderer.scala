@@ -1,6 +1,7 @@
 package galaxy.game
 
 import galaxy.common.{Rect, V2}
+import galaxy.game.bodies.SystemList
 import galaxy.rendering.RenderContext
 import galaxy.widgets.Button
 
@@ -18,6 +19,8 @@ object Renderer {
     nvgluBindFramebuffer(rc.nvg, rc.uiFramebuffer)
     frame {
       Button("Hello button", identity[AppState])
+      rc.layoutContext.cursor = rc.layoutContext.cursor.copy(position = rc.layoutContext.cursor.position + V2(0, 32))
+      SystemList.render()
     }
     nvgluBindFramebuffer(rc.nvg, null)
 
