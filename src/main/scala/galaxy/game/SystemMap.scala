@@ -79,13 +79,16 @@ object SystemMap {
         }
     }
 
-    val orbitLineRadius = camera.scalarToScreen(orbitNode.orbitRadius).toFloat
-    if (orbitLineRadius > 12 && orbitLineRadius < 40_000) {
+    val orbitSize = orbitNode.orbitSize.map(camera.scalarToScreen(_).toFloat)
+    if (orbitSize.x > 12 && orbitSize.x < 40_000) {
       val orbitLineCenter = camera.pointToScreen(orbitCenter).map(_.toFloat)
+      nvgTranslate(rc.nvg, orbitLineCenter.x, orbitLineCenter.y)
+      nvgRotate(rc.nvg, -orbitNode.orbitAngle.toFloat)
       nvgBeginPath(rc.nvg)
-      nvgCircle(rc.nvg, orbitLineCenter.x, orbitLineCenter.y, orbitLineRadius)
+      nvgEllipse(rc.nvg, 0, 0, orbitSize.x, orbitSize.y)
       nvgStrokeColor(rc.nvg, Colors.orbit)
       nvgStroke(rc.nvg)
+      nvgResetTransform(rc.nvg)
     }
   }
 

@@ -2,9 +2,9 @@ package galaxy.game.bodies
 
 import galaxy.common.Id
 
-object SolarSystem {
+import scala.util.Random
 
-  private val pi: Double = Math.PI
+object SolarSystem {
 
   val bodies: Map[Id[Body], Body] = {
     import BodyType._
@@ -31,53 +31,64 @@ object SolarSystem {
       Body(id = Id(21), name = "Titan", bodyType = Rocky),
       Body(id = Id(22), name = "Iapetus", bodyType = Rocky),
       Body(id = Id(6), name = "Uranus", bodyType = IceGiant),
-      Body(id = Id(7), name = "Neptune", bodyType = IceGiant)
+      Body(id = Id(7), name = "Neptune", bodyType = IceGiant),
+      Body(id = Id(23), name = "Pluto", bodyType = Rocky)
     ).map(b => b.id -> b).toMap
   }
 
   val rootOrbitNode: OrbitNode = OrbitNode(
     bodyId = Id(8),
-    orbitRadius = 0,
+    semiMajorAxis = 0,
+    eccentricity = 0,
+    orbitAngle = 0,
     phaseAtEpoch = 0,
     angularVelocity = 0,
     children = Vector(
-      OrbitNode(bodyId = Id(0), orbitRadius = 0.38, angularVelocity = orbitsInYears(0.24), phaseAtEpoch = 5.183077334009456, children = Vector.empty),
-      OrbitNode(bodyId = Id(1), orbitRadius = 0.72, angularVelocity = orbitsInYears(0.61), phaseAtEpoch = 1.2630917966904205, children = Vector.empty),
-      OrbitNode(bodyId = Id(2), orbitRadius = 1.00, angularVelocity = orbitsInYears(1), phaseAtEpoch = 3.150585230297741,
-        children = Vector(OrbitNode(bodyId = Id(9), orbitRadius = 0.0026, angularVelocity = orbitsInDays(27.32), phaseAtEpoch = 1.1052205264497115, children = Vector.empty))
+      node(id = 0, semiMajorAxis = 0.38, eccentricity = 0.206, angularVelocity = orbitsInYears(0.24)),
+      node(id = 1, semiMajorAxis = 0.72, eccentricity = 0.007, angularVelocity = orbitsInYears(0.61)),
+      node(id = 2, semiMajorAxis = 1.00, eccentricity = 0.017, angularVelocity = orbitsInYears(1),
+        children = Vector(node(id = 9, semiMajorAxis = 0.0026, eccentricity = 0.055, angularVelocity = orbitsInDays(27.32)))
       ),
-      OrbitNode(bodyId = Id(3), orbitRadius = 1.52, angularVelocity = orbitsInYears(1.88), phaseAtEpoch = 4.992778300672891,
+      node(id = 3, semiMajorAxis = 1.52, eccentricity = 0.093, angularVelocity = orbitsInYears(1.88),
         children = Vector(
-          OrbitNode(bodyId = Id(10), orbitRadius = 6.2e-5, angularVelocity = orbitsInDays(0.318), phaseAtEpoch = 4.951196230681527, children = Vector.empty),
-          OrbitNode(bodyId = Id(11), orbitRadius = 0.00015, angularVelocity = orbitsInDays(1.263), phaseAtEpoch = 3.1702750214086004, children = Vector.empty)
+          node(id = 10, semiMajorAxis = 6.2e-5, eccentricity = 0.015, angularVelocity = orbitsInDays(0.318)),
+          node(id = 11, semiMajorAxis = 0.00015, eccentricity = 0, angularVelocity = orbitsInDays(1.263))
         )
       ),
-      OrbitNode(bodyId = Id(4), orbitRadius = 5.20, angularVelocity = orbitsInYears(11.86), phaseAtEpoch = 4.389498795147114,
+      node(id = 4, semiMajorAxis = 5.20, eccentricity = 0.048, angularVelocity = orbitsInYears(11.86),
         children = Vector(
-          OrbitNode(bodyId = Id(12), orbitRadius = 0.0028, angularVelocity = orbitsInDays(1.77), phaseAtEpoch = 0.9847674707864948, children = Vector.empty),
-          OrbitNode(bodyId = Id(13), orbitRadius = 0.0044, angularVelocity = orbitsInDays(3.55), phaseAtEpoch = 4.192675332309923, children = Vector.empty),
-          OrbitNode(bodyId = Id(14), orbitRadius = 0.0071, angularVelocity = orbitsInDays(7.15), phaseAtEpoch = 2.7159649277748605, children = Vector.empty),
-          OrbitNode(bodyId = Id(15), orbitRadius = 0.0125, angularVelocity = orbitsInDays(16.69), phaseAtEpoch = 4.856683528845399, children = Vector.empty)
+          node(id = 12, semiMajorAxis = 0.0028, eccentricity = 0.004, angularVelocity = orbitsInDays(1.77)),
+          node(id = 13, semiMajorAxis = 0.0044, eccentricity = 0.009, angularVelocity = orbitsInDays(3.55)),
+          node(id = 14, semiMajorAxis = 0.0071, eccentricity = 0.001, angularVelocity = orbitsInDays(7.15)),
+          node(id = 15, semiMajorAxis = 0.0125, eccentricity = 0.007, angularVelocity = orbitsInDays(16.69))
         )
       ),
-      OrbitNode(bodyId = Id(5), orbitRadius = 9.53, angularVelocity = orbitsInYears(29.44), phaseAtEpoch = 1.3941826461020987,
+      node(id = 5, semiMajorAxis = 9.53, eccentricity = 0.054, angularVelocity = orbitsInYears(29.44),
         children = Vector(
-          OrbitNode(bodyId = Id(16), orbitRadius = 0.0012, angularVelocity = orbitsInDays(0.9), phaseAtEpoch = 5.5490471982273215, children = Vector.empty),
-          OrbitNode(bodyId = Id(17), orbitRadius = 0.0016, angularVelocity = orbitsInDays(1.4), phaseAtEpoch = 1.9301490174419995, children = Vector.empty),
-          OrbitNode(bodyId = Id(18), orbitRadius = 0.0020, angularVelocity = orbitsInDays(1.9), phaseAtEpoch = 5.270329258859241, children = Vector.empty),
-          OrbitNode(bodyId = Id(19), orbitRadius = 0.0025, angularVelocity = orbitsInDays(2.7), phaseAtEpoch = 4.654234941931287, children = Vector.empty),
-          OrbitNode(bodyId = Id(20), orbitRadius = 0.0040, angularVelocity = orbitsInDays(4.5), phaseAtEpoch = 4.903102665762759, children = Vector.empty),
-          OrbitNode(bodyId = Id(21), orbitRadius = 0.0081, angularVelocity = orbitsInDays(16), phaseAtEpoch = 1.403922883894238, children = Vector.empty),
-          OrbitNode(bodyId = Id(22), orbitRadius = 0.0238, angularVelocity = orbitsInDays(79), phaseAtEpoch = 5.90320859341022, children = Vector.empty)
+          node(id = 16, semiMajorAxis = 0.0012, eccentricity = 0.020, angularVelocity = orbitsInDays(0.9)),
+          node(id = 17, semiMajorAxis = 0.0016, eccentricity = 0.004, angularVelocity = orbitsInDays(1.4)),
+          node(id = 18, semiMajorAxis = 0.0020, eccentricity = 0.020, angularVelocity = orbitsInDays(1.9)),
+          node(id = 19, semiMajorAxis = 0.0025, eccentricity = 0.002, angularVelocity = orbitsInDays(2.7)),
+          node(id = 20, semiMajorAxis = 0.0040, eccentricity = 0.001, angularVelocity = orbitsInDays(4.5)),
+          node(id = 21, semiMajorAxis = 0.0081, eccentricity = 0.029, angularVelocity = orbitsInDays(16)),
+          node(id = 22, semiMajorAxis = 0.0238, eccentricity = 0.029, angularVelocity = orbitsInDays(79))
         )
       ),
-      OrbitNode(bodyId = Id(6), orbitRadius = 19.19, angularVelocity = orbitsInYears(84.01), phaseAtEpoch = 5.034906979201371, children = Vector.empty),
-      OrbitNode(bodyId = Id(7), orbitRadius = 30.06, angularVelocity = orbitsInYears(164.79), phaseAtEpoch = 3.7836608026774474, children = Vector.empty)
+      node(id = 6, semiMajorAxis = 19.19, eccentricity = 0.047, angularVelocity = orbitsInYears(84.01)),
+      node(id = 7, semiMajorAxis = 30.06, eccentricity = 0.009, angularVelocity = orbitsInYears(164.79)),
+      node(id = 23, semiMajorAxis = 39.48, eccentricity = 0.249, angularVelocity = orbitsInYears(247.94))
     )
   )
 
+  private def node(id: Long, semiMajorAxis: Double, eccentricity: Double, angularVelocity: Double, children: Vector[OrbitNode] = Vector.empty): OrbitNode = {
+    val random = new Random(id)
+    val orbitAngle = random.nextDouble()
+    val phaseAtEpoch = random.nextDouble()
+    OrbitNode(Id[Body](id), semiMajorAxis, eccentricity, orbitAngle, phaseAtEpoch, angularVelocity, children)
+  }
+
   private def orbitsInDays(days: Double): Double =
-    2 * pi / (days * 24 * 60 * 60)
+    2 * Math.PI / (days * 24 * 60 * 60)
 
   private def orbitsInYears(years: Double): Double =
     orbitsInDays(years * 365)

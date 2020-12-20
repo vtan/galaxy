@@ -34,4 +34,10 @@ object V2 {
 
   def unitWithAngle(angle: Double): V2[Double] =
     V2(Math.cos(angle), Math.sin(angle))
+
+  def rotate(v: V2[Double], angle: Double): V2[Double] = {
+    val sin = Math.sin(angle)
+    val cos = Math.cos(angle)
+    V2(v.x * cos - v.y * sin, v.x * sin + v.y * cos)
+  }
 }
