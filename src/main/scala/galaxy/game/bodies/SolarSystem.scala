@@ -44,47 +44,47 @@ object SolarSystem {
     phaseAtEpoch = 0,
     angularVelocity = 0,
     children = Vector(
-      node(id = 0, semiMajorAxis = 0.38, eccentricity = 0.206, angularVelocity = orbitsInYears(0.24)),
-      node(id = 1, semiMajorAxis = 0.72, eccentricity = 0.007, angularVelocity = orbitsInYears(0.61)),
-      node(id = 2, semiMajorAxis = 1.00, eccentricity = 0.017, angularVelocity = orbitsInYears(1),
-        children = Vector(node(id = 9, semiMajorAxis = 0.0026, eccentricity = 0.055, angularVelocity = orbitsInDays(27.32)))
+      node(id = 0, semiMajorAxisAu = 0.38, eccentricity = 0.206, angularVelocity = orbitsInYears(0.24)),
+      node(id = 1, semiMajorAxisAu = 0.72, eccentricity = 0.007, angularVelocity = orbitsInYears(0.61)),
+      node(id = 2, semiMajorAxisAu = 1.00, eccentricity = 0.017, angularVelocity = orbitsInYears(1),
+        children = Vector(node(id = 9, semiMajorAxisAu = 0.0026, eccentricity = 0.055, angularVelocity = orbitsInDays(27.32)))
       ),
-      node(id = 3, semiMajorAxis = 1.52, eccentricity = 0.093, angularVelocity = orbitsInYears(1.88),
+      node(id = 3, semiMajorAxisAu = 1.52, eccentricity = 0.093, angularVelocity = orbitsInYears(1.88),
         children = Vector(
-          node(id = 10, semiMajorAxis = 6.2e-5, eccentricity = 0.015, angularVelocity = orbitsInDays(0.318)),
-          node(id = 11, semiMajorAxis = 0.00015, eccentricity = 0, angularVelocity = orbitsInDays(1.263))
+          node(id = 10, semiMajorAxisAu = 6.2e-5, eccentricity = 0.015, angularVelocity = orbitsInDays(0.318)),
+          node(id = 11, semiMajorAxisAu = 0.00015, eccentricity = 0, angularVelocity = orbitsInDays(1.263))
         )
       ),
-      node(id = 4, semiMajorAxis = 5.20, eccentricity = 0.048, angularVelocity = orbitsInYears(11.86),
+      node(id = 4, semiMajorAxisAu = 5.20, eccentricity = 0.048, angularVelocity = orbitsInYears(11.86),
         children = Vector(
-          node(id = 12, semiMajorAxis = 0.0028, eccentricity = 0.004, angularVelocity = orbitsInDays(1.77)),
-          node(id = 13, semiMajorAxis = 0.0044, eccentricity = 0.009, angularVelocity = orbitsInDays(3.55)),
-          node(id = 14, semiMajorAxis = 0.0071, eccentricity = 0.001, angularVelocity = orbitsInDays(7.15)),
-          node(id = 15, semiMajorAxis = 0.0125, eccentricity = 0.007, angularVelocity = orbitsInDays(16.69))
+          node(id = 12, semiMajorAxisAu = 0.0028, eccentricity = 0.004, angularVelocity = orbitsInDays(1.77)),
+          node(id = 13, semiMajorAxisAu = 0.0044, eccentricity = 0.009, angularVelocity = orbitsInDays(3.55)),
+          node(id = 14, semiMajorAxisAu = 0.0071, eccentricity = 0.001, angularVelocity = orbitsInDays(7.15)),
+          node(id = 15, semiMajorAxisAu = 0.0125, eccentricity = 0.007, angularVelocity = orbitsInDays(16.69))
         )
       ),
-      node(id = 5, semiMajorAxis = 9.53, eccentricity = 0.054, angularVelocity = orbitsInYears(29.44),
+      node(id = 5, semiMajorAxisAu = 9.53, eccentricity = 0.054, angularVelocity = orbitsInYears(29.44),
         children = Vector(
-          node(id = 16, semiMajorAxis = 0.0012, eccentricity = 0.020, angularVelocity = orbitsInDays(0.9)),
-          node(id = 17, semiMajorAxis = 0.0016, eccentricity = 0.004, angularVelocity = orbitsInDays(1.4)),
-          node(id = 18, semiMajorAxis = 0.0020, eccentricity = 0.020, angularVelocity = orbitsInDays(1.9)),
-          node(id = 19, semiMajorAxis = 0.0025, eccentricity = 0.002, angularVelocity = orbitsInDays(2.7)),
-          node(id = 20, semiMajorAxis = 0.0040, eccentricity = 0.001, angularVelocity = orbitsInDays(4.5)),
-          node(id = 21, semiMajorAxis = 0.0081, eccentricity = 0.029, angularVelocity = orbitsInDays(16)),
-          node(id = 22, semiMajorAxis = 0.0238, eccentricity = 0.029, angularVelocity = orbitsInDays(79))
+          node(id = 16, semiMajorAxisAu = 0.0012, eccentricity = 0.020, angularVelocity = orbitsInDays(0.9)),
+          node(id = 17, semiMajorAxisAu = 0.0016, eccentricity = 0.004, angularVelocity = orbitsInDays(1.4)),
+          node(id = 18, semiMajorAxisAu = 0.0020, eccentricity = 0.020, angularVelocity = orbitsInDays(1.9)),
+          node(id = 19, semiMajorAxisAu = 0.0025, eccentricity = 0.002, angularVelocity = orbitsInDays(2.7)),
+          node(id = 20, semiMajorAxisAu = 0.0040, eccentricity = 0.001, angularVelocity = orbitsInDays(4.5)),
+          node(id = 21, semiMajorAxisAu = 0.0081, eccentricity = 0.029, angularVelocity = orbitsInDays(16)),
+          node(id = 22, semiMajorAxisAu = 0.0238, eccentricity = 0.029, angularVelocity = orbitsInDays(79))
         )
       ),
-      node(id = 6, semiMajorAxis = 19.19, eccentricity = 0.047, angularVelocity = orbitsInYears(84.01)),
-      node(id = 7, semiMajorAxis = 30.06, eccentricity = 0.009, angularVelocity = orbitsInYears(164.79)),
-      node(id = 23, semiMajorAxis = 39.48, eccentricity = 0.249, angularVelocity = orbitsInYears(247.94))
+      node(id = 6, semiMajorAxisAu = 19.19, eccentricity = 0.047, angularVelocity = orbitsInYears(84.01)),
+      node(id = 7, semiMajorAxisAu = 30.06, eccentricity = 0.009, angularVelocity = orbitsInYears(164.79)),
+      node(id = 23, semiMajorAxisAu = 39.48, eccentricity = 0.249, angularVelocity = orbitsInYears(247.94))
     )
   )
 
-  private def node(id: Long, semiMajorAxis: Double, eccentricity: Double, angularVelocity: Double, children: Vector[OrbitNode] = Vector.empty): OrbitNode = {
+  private def node(id: Long, semiMajorAxisAu: Double, eccentricity: Double, angularVelocity: Double, children: Vector[OrbitNode] = Vector.empty): OrbitNode = {
     val random = new Random(id)
     val orbitAngle = random.nextDouble()
     val phaseAtEpoch = random.nextDouble()
-    OrbitNode(Id[Body](id), semiMajorAxis, eccentricity, orbitAngle, phaseAtEpoch, angularVelocity, children)
+    OrbitNode(Id[Body](id), 499.05 * semiMajorAxisAu, eccentricity, orbitAngle, phaseAtEpoch, angularVelocity, children)
   }
 
   private def orbitsInDays(days: Double): Double =

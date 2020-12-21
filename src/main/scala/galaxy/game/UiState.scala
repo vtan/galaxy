@@ -12,7 +12,7 @@ object UiState {
     camera = Camera(
       worldPosition = V2.zero,
       screenCenter = 0.5 *: screenSize,
-      worldToScreenScale = 200
+      worldToScreenScale = 0.4
     ),
     draggingCamera = false
   )

@@ -1,6 +1,7 @@
 package galaxy.game.bodies
 
 import galaxy.common.{Id, V2}
+import galaxy.game.dimensions.Time
 
 final case class OrbitNode(
   bodyId: Id[Body],
@@ -21,11 +22,11 @@ final case class OrbitNode(
   val focusToCenter: V2[Double] =
     (semiMajorAxis * eccentricity) *: V2.unitWithAngle(orbitAngle)
 
-  def orbitalStatesAt(time: Long): Map[Id[Body], OrbitalState] =
+  def orbitalStatesAt(time: Time): Map[Id[Body], OrbitalState] =
     orbitalStateRelativeToOriginAt(origin = V2.zero, time)
 
-  private def orbitalStateRelativeToOriginAt(origin: V2[Double], time: Long): Map[Id[Body], OrbitalState] = {
-    val phase = (phaseAtEpoch + time.toDouble * angularVelocity) % (2 * Math.PI)
+  private def orbitalStateRelativeToOriginAt(origin: V2[Double], time: Time): Map[Id[Body], OrbitalState] = {
+    val phase = (phaseAtEpoch + time.asSeconds.toDouble * angularVelocity) % (2 * Math.PI)
     val center = origin + focusToCenter
     val position = center + V2.rotate(orbitSize * V2.unitWithAngle(phase), orbitAngle)
     val childPositions = children.flatMap(_.orbitalStateRelativeToOriginAt(origin = position, time)).toMap

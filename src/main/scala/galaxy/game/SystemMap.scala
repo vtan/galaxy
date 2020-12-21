@@ -12,7 +12,6 @@ object SystemMap {
 
   def render()(implicit rc: RenderContext[AppState]): Unit = {
     renderOrbitNode(rc.appState.gameState.rootOrbitNode, parentCenterOnScreen = None)
-    rc.dispatch(_.mapGameState(StepLogic.stepTime(diff = 60 * 60)))
     handleEvents()
   }
 
@@ -37,9 +36,9 @@ object SystemMap {
 
       case ScrollEvent(_, y) =>
         rc.dispatch(_.mapUiState { ui =>
-          val zoomLevel = Math.cbrt(ui.camera.worldToScreenScale)
+          val zoomLevel = Math.cbrt(500 * ui.camera.worldToScreenScale)
           val clamped = clamp(1.5, zoomLevel + 0.5 * y, 70)
-          val newScale = clamped * clamped * clamped
+          val newScale = clamped * clamped * clamped / 500
           ui.copy(camera = ui.camera.copy(worldToScreenScale = newScale))
         })
 
