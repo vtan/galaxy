@@ -1,6 +1,7 @@
 package galaxy
 
 import galaxy.common.V2
+import galaxy.game.bodies.SystemGenerator
 import galaxy.game.{AppState, GameState, Renderer, UiState}
 import galaxy.rendering.{CursorPositionEvent, GlfwEvent, LayoutContext, MouseButtonEvent, RenderContext, ScrollEvent}
 
@@ -12,8 +13,8 @@ import org.lwjgl.nanovg.NanoVG._
 import org.lwjgl.nanovg.NanoVGGL3._
 import org.lwjgl.system.MemoryStack._
 import org.lwjgl.system.MemoryUtil._
-
 import java.util.concurrent.atomic.AtomicReference
+import scala.util.Random
 
 object Main {
   private val requestedWindowSize = V2(1728, 972)

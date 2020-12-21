@@ -27,3 +27,7 @@ final case class Orbit(
     OrbitalState(position = position, orbitCenter = center)
   }
 }
+
+object Orbit {
+  val inert = Orbit(0, 0, 0, 0, 0)
+}

@@ -1,7 +1,7 @@
 package galaxy.game
 
 import galaxy.common.{Rect, V2}
-import galaxy.game.bodies.SystemList
+import galaxy.game.bodies.{SystemGenerator, SystemList}
 import galaxy.game.dimensions.TimeDiff
 import galaxy.rendering.RenderContext
 import galaxy.widgets.{Button, Label}
@@ -10,6 +10,7 @@ import org.lwjgl.nanovg.NVGPaint
 import org.lwjgl.nanovg.NanoVG._
 import org.lwjgl.nanovg.NanoVGGL3._
 import org.lwjgl.opengl.GL11C._
+import scala.util.Random
 
 object Renderer {
   private val framebufferPaint: NVGPaint = NVGPaint.create()
@@ -28,7 +29,9 @@ object Renderer {
 
     nvgluBindFramebuffer(rc.nvg, rc.uiFramebuffer)
     frame {
-      Button("Hello button", identity[AppState])
+      Button[AppState]("Generate", _.mapGameState(
+        _.copy(rootSystemNode = SystemGenerator.generate(new Random()))
+      ))
       rc.layoutContext.cursor = rc.layoutContext.cursor.copy(position = rc.layoutContext.cursor.position + V2(0, 32))
       SystemList.render()
 
