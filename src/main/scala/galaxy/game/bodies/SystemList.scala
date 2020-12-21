@@ -10,10 +10,9 @@ object SystemList {
 
   def render()(implicit rc: RenderContext[AppState]): Unit = {
     val gs = rc.appState.gameState
-    val lines = gs.rootOrbitNode.depthFirstSeq.map {
+    val lines = gs.rootSystemNode.depthFirstSeq.map {
       case (node, depth) =>
-        val body = gs.bodies(node.bodyId)
-        (1 to depth).map(_ => "  |   ").mkString ++ body.name
+        (1 to depth).map(_ => "  |   ").mkString ++ node.body.name
     }
 
     val Rect(V2(x, y), _) = rc.layoutContext.cursor.map(_.toFloat)

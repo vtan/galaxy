@@ -1,23 +1,21 @@
 package galaxy.game
 
 import galaxy.common.Id
-import galaxy.game.bodies.{Body, OrbitNode, OrbitalState, SolarSystem}
+import galaxy.game.bodies.{OrbitalState, SolarSystem, SystemNode}
 import galaxy.game.dimensions.{Time, TimeDiff}
 
 final case class GameState(
-  bodies: Map[Id[Body], Body],
-  rootOrbitNode: OrbitNode,
+  rootSystemNode: SystemNode,
   time: Time,
   updateSpeed: Option[TimeDiff]
 ) {
-  lazy val orbitalStates: Map[Id[Body], OrbitalState] =
-    rootOrbitNode.orbitalStatesAt(time)
+  lazy val orbitalStates: Map[Id[SystemNode], OrbitalState] =
+    rootSystemNode.orbitalStatesAt(time)
 }
 
 object GameState {
   val initial: GameState = GameState(
-    bodies = SolarSystem.bodies,
-    rootOrbitNode = SolarSystem.rootOrbitNode,
+    rootSystemNode = SolarSystem.rootSystemNode,
     time = Time.epoch,
     updateSpeed = None
   )

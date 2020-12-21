@@ -2,7 +2,7 @@ package galaxy.game
 
 import galaxy.clamp
 import galaxy.common.V2
-import galaxy.game.bodies.{BodyType, OrbitNode, OrbitalState}
+import galaxy.game.bodies.{BodyType, SystemNode, OrbitalState}
 import galaxy.rendering._
 
 import org.lwjgl.glfw.GLFW._
@@ -11,7 +11,7 @@ import org.lwjgl.nanovg.NanoVG._
 object SystemMap {
 
   def render()(implicit rc: RenderContext[AppState]): Unit = {
-    renderOrbitNode(rc.appState.gameState.rootOrbitNode, parentCenterOnScreen = None)
+    renderNode(rc.appState.gameState.rootSystemNode, parentCenterOnScreen = None)
     handleEvents()
   }
 
@@ -45,10 +45,10 @@ object SystemMap {
       case _ => ()
     }
 
-  private def renderOrbitNode(orbitNode: OrbitNode, parentCenterOnScreen: Option[V2[Float]])(implicit rc: RenderContext[AppState]): Unit = {
+  private def renderNode(systemNode: SystemNode, parentCenterOnScreen: Option[V2[Float]])(implicit rc: RenderContext[AppState]): Unit = {
     val gs = rc.appState.gameState
     val camera = rc.appState.uiState.camera
-    val OrbitalState(position, orbitCenter) = gs.orbitalStates(orbitNode.bodyId)
+    val OrbitalState(position, orbitCenter) = gs.orbitalStates(systemNode.id)
 
     val bodyCenter = camera.pointToScreen(position).map(_.toFloat)
     val distanceSqFromParent = parentCenterOnScreen.map(p => (p - bodyCenter).lengthSq)
@@ -57,9 +57,8 @@ object SystemMap {
         ()
       case distSqOpt =>
         val small = distSqOpt.exists(_ < 16 * 16)
-        val body = gs.bodies(orbitNode.bodyId)
         nvgBeginPath(rc.nvg)
-        if (body.bodyType == BodyType.Star) {
+        if (systemNode.body.bodyType == BodyType.Star) {
           nvgTranslate(rc.nvg, bodyCenter.x, bodyCenter.y)
           nvgScale(rc.nvg, 12, 12)
           starPath.draw(rc.nvg)
@@ -67,22 +66,22 @@ object SystemMap {
         } else {
           nvgCircle(rc.nvg, bodyCenter.x, bodyCenter.y, if (small) 4 else 8)
         }
-        nvgStrokeColor(rc.nvg, Colors.bodyColors(body.bodyType))
+        nvgStrokeColor(rc.nvg, Colors.bodyColors(systemNode.body.bodyType))
         nvgStroke(rc.nvg)
 
         if (!small) {
           nvgFillColor(rc.nvg, Colors.text)
-          nvgText(rc.nvg, bodyCenter.x - 8, bodyCenter.y + 24, body.name)
+          nvgText(rc.nvg, bodyCenter.x - 8, bodyCenter.y + 24, systemNode.body.name)
 
-          orbitNode.children.foreach(renderOrbitNode(_, Some(bodyCenter)))
+          systemNode.children.foreach(renderNode(_, Some(bodyCenter)))
         }
     }
 
-    val orbitSize = orbitNode.orbitSize.map(camera.scalarToScreen(_).toFloat)
+    val orbitSize = systemNode.orbit.orbitSize.map(camera.scalarToScreen(_).toFloat)
     if (orbitSize.x > 12 && orbitSize.x < 40_000) {
       val orbitLineCenter = camera.pointToScreen(orbitCenter).map(_.toFloat)
       nvgTranslate(rc.nvg, orbitLineCenter.x, orbitLineCenter.y)
-      nvgRotate(rc.nvg, -orbitNode.orbitAngle.toFloat)
+      nvgRotate(rc.nvg, -systemNode.orbit.orbitAngle.toFloat)
       nvgBeginPath(rc.nvg)
       nvgEllipse(rc.nvg, 0, 0, orbitSize.x, orbitSize.y)
       nvgStrokeColor(rc.nvg, Colors.orbit)
