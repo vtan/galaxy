@@ -20,6 +20,17 @@ final case class SystemNode(
     childPositions + (id -> orbitalState)
   }
 
+  def assignIds: SystemNode = assignIdsFrom(0)._1
+
+  private def assignIdsFrom(from: Int): (SystemNode, Int) = {
+    val (updated, idAfter) = children.foldLeft((Vector.empty[SystemNode], from)) {
+      case ((acc, nextId), node) =>
+        val (updated, idAfter) = node.assignIdsFrom(nextId)
+        (acc :+ updated, idAfter)
+    }
+    (copy(id = Id(idAfter), children = updated), idAfter + 1)
+  }
+
   def depthFirstSeq: Seq[(SystemNode, Int)] =
     depthFirstSeqFrom(0)
 
