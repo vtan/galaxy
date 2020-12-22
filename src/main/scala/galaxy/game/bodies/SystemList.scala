@@ -10,7 +10,8 @@ object SystemList {
 
   def render()(implicit rc: RenderContext[AppState]): Unit = {
     val gs = rc.appState.gameState
-    val lines = gs.rootSystemNode.depthFirstSeq.map {
+    val selectedStarSystem = gs.starSystems(rc.appState.uiState.selectedStarSystem)
+    val lines = selectedStarSystem.rootNode.depthFirstSeq.map {
       case (node, depth) =>
         (1 to depth).map(_ => "  |   ").mkString ++ node.body.name
     }

@@ -1,8 +1,8 @@
 package galaxy.game
 
 import galaxy.clamp
-import galaxy.common.V2
-import galaxy.game.bodies.{BodyType, SystemNode, OrbitalState}
+import galaxy.common.{Id, V2}
+import galaxy.game.bodies.{BodyType, OrbitalState, SystemNode}
 import galaxy.rendering._
 
 import org.lwjgl.glfw.GLFW._
@@ -11,7 +11,11 @@ import org.lwjgl.nanovg.NanoVG._
 object SystemMap {
 
   def render()(implicit rc: RenderContext[AppState]): Unit = {
-    renderNode(rc.appState.gameState.rootSystemNode, parentCenterOnScreen = None)
+    val gs = rc.appState.gameState
+    val selectedStarSystem = gs.starSystems(rc.appState.uiState.selectedStarSystem)
+    val orbitalStates = selectedStarSystem.rootNode.orbitalStatesAt(gs.time)
+
+    renderNode(selectedStarSystem.rootNode, orbitalStates, parentCenterOnScreen = None)
     handleEvents()
   }
 
@@ -45,10 +49,13 @@ object SystemMap {
       case _ => ()
     }
 
-  private def renderNode(systemNode: SystemNode, parentCenterOnScreen: Option[V2[Float]])(implicit rc: RenderContext[AppState]): Unit = {
-    val gs = rc.appState.gameState
+  private def renderNode(
+    systemNode: SystemNode,
+    orbitalStates: Map[Id[SystemNode], OrbitalState],
+    parentCenterOnScreen: Option[V2[Float]]
+  )(implicit rc: RenderContext[AppState]): Unit = {
     val camera = rc.appState.uiState.camera
-    val OrbitalState(position, orbitCenter) = gs.orbitalStates(systemNode.id)
+    val OrbitalState(position, orbitCenter) = orbitalStates(systemNode.id)
 
     val bodyCenter = camera.pointToScreen(position).map(_.toFloat)
     val distanceSqFromParent = parentCenterOnScreen.map(p => (p - bodyCenter).lengthSq)
@@ -61,7 +68,7 @@ object SystemMap {
         if (systemNode.body.bodyType == BodyType.Star) {
           nvgTranslate(rc.nvg, bodyCenter.x, bodyCenter.y)
           nvgScale(rc.nvg, 12, 12)
-          starPath.draw(rc.nvg)
+          Paths.star.draw(rc.nvg)
           nvgResetTransform(rc.nvg)
         } else {
           nvgCircle(rc.nvg, bodyCenter.x, bodyCenter.y, if (small) 4 else 8)
@@ -73,7 +80,7 @@ object SystemMap {
           nvgFillColor(rc.nvg, Colors.text)
           nvgText(rc.nvg, bodyCenter.x - 8, bodyCenter.y + 24, systemNode.body.name)
 
-          systemNode.children.foreach(renderNode(_, Some(bodyCenter)))
+          systemNode.children.foreach(renderNode(_, orbitalStates, Some(bodyCenter)))
         }
     }
 
@@ -89,9 +96,4 @@ object SystemMap {
       nvgResetTransform(rc.nvg)
     }
   }
-
-  private val starPath: Path = Path(
-    V2(1, 0), V2(0.2, 0.2), V2(0, 1), V2(-0.2, 0.2),
-    V2(-1, 0), V2(-0.2, -0.2), V2(0, -1), V2(0.2, -0.2)
-  )
 }

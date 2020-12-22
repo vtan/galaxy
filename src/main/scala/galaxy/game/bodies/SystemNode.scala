@@ -22,7 +22,7 @@ final case class SystemNode(
 
   def assignIds: SystemNode = assignIdsFrom(0)._1
 
-  private def assignIdsFrom(from: Int): (SystemNode, Int) = {
+  private def assignIdsFrom(from: Long): (SystemNode, Long) = {
     val (updated, idAfter) = children.foldLeft((Vector.empty[SystemNode], from)) {
       case ((acc, nextId), node) =>
         val (updated, idAfter) = node.assignIdsFrom(nextId)
