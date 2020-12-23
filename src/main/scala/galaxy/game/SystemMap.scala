@@ -17,6 +17,22 @@ object SystemMap {
 
     nvgFontSize(rc.nvg, 16)
     renderNode(selectedStarSystem.rootNode, orbitalStates, parentCenterOnScreen = None)
+
+    val camera = rc.appState.uiState.camera
+    selectedStarSystem.jumpPoints.foreach { jumpPoint =>
+      val destination = gs.starSystems(jumpPoint.destination)
+      val center = camera.pointToScreen(jumpPoint.position).map(_.toFloat)
+      nvgBeginPath(rc.nvg)
+      nvgRect(rc.nvg, center.x - 4, center.y - 4, 8, 8)
+      nvgStrokeColor(rc.nvg, Colors.jumpPoint)
+      nvgStroke(rc.nvg)
+
+      nvgFillColor(rc.nvg, Colors.text)
+      nvgTextAlign(rc.nvg, NVG_ALIGN_TOP | NVG_ALIGN_CENTER)
+      nvgText(rc.nvg, center.x, center.y + 8, destination.name)
+      nvgTextAlign(rc.nvg, NVG_ALIGN_LEFT | NVG_ALIGN_BASELINE)
+    }
+
     handleEvents()
   }
 

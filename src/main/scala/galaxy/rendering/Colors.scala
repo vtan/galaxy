@@ -8,6 +8,7 @@ object Colors {
   val orbit = createColor(0.8, 0.75, 0.6, 0.5)
   val text = createColor(1, 1, 1)
   val jumpLine = createColor(1, 1, 1, 0.5)
+  val jumpPoint = createColor(0.5, 0.3, 1)
 
   val bodyColors: Function[BodyType, NVGColor] = {
     case BodyType.Star => createColor(1, 1, 0)
