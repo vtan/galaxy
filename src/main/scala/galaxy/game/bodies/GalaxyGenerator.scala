@@ -18,7 +18,7 @@ object GalaxyGenerator {
       if !(x == 0 && y == 0)
       dx = random.nextDouble() - 0.5
       dy = random.nextDouble() - 0.5
-    } yield 8 *: V2(x.toDouble + dx, y.toDouble + dy)
+    } yield 6 *: V2(x.toDouble + dx, y.toDouble + dy)
     val nameStream = LazyList.from(generateSystemNames) ++ LazyList.continually("???")
 
     val starSystems = (coords zip nameStream).zipWithIndex.map {
@@ -28,7 +28,8 @@ object GalaxyGenerator {
           id = Id(index.toLong + 1),
           name = name,
           position = position,
-          rootNode = rootNode
+          rootNode = rootNode,
+          jumpPoints = Vector.empty
         )
     }
 
@@ -36,10 +37,28 @@ object GalaxyGenerator {
       id = Id(0),
       name = "Sol",
       position = V2.zero,
-      rootNode = SolarSystem.rootSystemNode
+      rootNode = SolarSystem.rootSystemNode,
+      jumpPoints = Vector.empty
     )
 
-    (sol +: starSystems).map(s => s.id -> s).toMap
+    addJumpPoints(sol +: starSystems)
+      .map(s => s.id -> s).toMap
+  }
+
+  private def addJumpPoints(starSystems: Seq[StarSystem]): Seq[StarSystem] = {
+    val thresholdSq = 8.5 * 8.5
+    starSystems.map { starSystem =>
+      val neighbors = starSystems
+        .filter(_.id != starSystem.id)
+        .filter(other => (other.position - starSystem.position).lengthSq <= thresholdSq)
+      val jumpPoints = neighbors.map { neighbor =>
+        JumpPoint(
+          destination = neighbor.id,
+          position = 2000 *: (neighbor.position - starSystem.position)
+        )
+      }.toVector
+      starSystem.copy(jumpPoints = jumpPoints)
+    }
   }
 
   private def generateSystemNames(implicit random: Random): Seq[String] = {

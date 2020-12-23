@@ -1,7 +1,7 @@
 package galaxy.game
 
-import galaxy.common.{Rect, V2}
-import galaxy.game.bodies.{SystemGenerator, SystemList}
+import galaxy.common.{Id, Rect, V2}
+import galaxy.game.bodies.{GalaxyGenerator, SystemGenerator, SystemList}
 import galaxy.game.dimensions.TimeDiff
 import galaxy.rendering.RenderContext
 import galaxy.widgets.{Button, Label}
@@ -39,6 +39,14 @@ object Ui {
 
       rc.layoutContext.cursor = Rect(V2(8, 8 + 24 + 8), V2(120, 24))
       Label("Selected: " + rc.appState.gameState.starSystems(rc.appState.uiState.selectedStarSystem).name)
+
+      rc.layoutContext.cursor = Rect(V2(128, 8), V2(120, 24))
+      Button[AppState]("Generate", _.mapGameState { gs =>
+        val starSystems = GalaxyGenerator.generate(new Random())
+        gs.copy(starSystems = starSystems)
+      }.mapUiState { ui =>
+        ui.copy(selectedStarSystem = Id(0))
+      })
     }
 
     timeOptions.zipWithIndex.foreach {

@@ -22,13 +22,13 @@ object GalaxyMap {
     {
       val selectedStarSystem = gs.starSystems(rc.appState.uiState.selectedStarSystem)
       val center = camera.pointToScreen(selectedStarSystem.position).map(_.toFloat)
-      val radius = camera.scalarToScreen(4).toFloat
       nvgBeginPath(rc.nvg)
-      nvgCircle(rc.nvg, center.x, center.y, radius)
-      nvgStrokeColor(rc.nvg, Colors.bodyColors(BodyType.Star))
+      nvgCircle(rc.nvg, center.x, center.y, 32)
+      nvgStrokeColor(rc.nvg, Colors.text)
       nvgStroke(rc.nvg)
     }
 
+    nvgFontSize(rc.nvg, 16)
     gs.starSystems.values.foreach { starSystem =>
       val center = camera.pointToScreen(starSystem.position).map(_.toFloat)
       nvgBeginPath(rc.nvg)
@@ -43,6 +43,17 @@ object GalaxyMap {
       nvgTextAlign(rc.nvg, NVG_ALIGN_TOP | NVG_ALIGN_CENTER)
       nvgText(rc.nvg, center.x, center.y + 8, starSystem.name)
       nvgTextAlign(rc.nvg, NVG_ALIGN_LEFT | NVG_ALIGN_BASELINE)
+
+      starSystem.jumpPoints.foreach { jumpPont =>
+        if (jumpPont.destination.asLong > starSystem.id.asLong) {
+          val other = camera.pointToScreen(gs.starSystems(jumpPont.destination).position).map(_.toFloat)
+          nvgBeginPath(rc.nvg)
+          nvgMoveTo(rc.nvg, center.x, center.y)
+          nvgLineTo(rc.nvg, other.x, other.y)
+          nvgStrokeColor(rc.nvg, Colors.jumpLine)
+          nvgStroke(rc.nvg)
+        }
+      }
     }
   }
 

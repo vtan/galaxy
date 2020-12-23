@@ -40,4 +40,7 @@ object V2 {
     val cos = Math.cos(angle)
     V2(v.x * cos - v.y * sin, v.x * sin + v.y * cos)
   }
+
+  def angle(v: V2[Double]): Double =
+    Math.atan2(v.y, v.x)
 }

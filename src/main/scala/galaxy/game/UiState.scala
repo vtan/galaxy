@@ -25,7 +25,7 @@ object UiState {
     galaxyCamera = Camera(
       worldPosition = V2.zero,
       screenCenter = 0.5 *: screenSize,
-      worldToScreenScale = 36
+      worldToScreenScale = 25
     ),
     draggingGalaxyCamera = false
   )

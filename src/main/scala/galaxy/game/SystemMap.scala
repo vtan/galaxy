@@ -15,6 +15,7 @@ object SystemMap {
     val selectedStarSystem = gs.starSystems(rc.appState.uiState.selectedStarSystem)
     val orbitalStates = selectedStarSystem.rootNode.orbitalStatesAt(gs.time)
 
+    nvgFontSize(rc.nvg, 16)
     renderNode(selectedStarSystem.rootNode, orbitalStates, parentCenterOnScreen = None)
     handleEvents()
   }

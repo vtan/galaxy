@@ -6,5 +6,6 @@ final case class StarSystem(
   id: Id[StarSystem],
   name: String,
   position: V2[Double],
-  rootNode: SystemNode
+  rootNode: SystemNode,
+  jumpPoints: Vector[JumpPoint]
 )
