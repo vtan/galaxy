@@ -2,7 +2,8 @@ package galaxy.game
 
 import galaxy.clamp
 import galaxy.common.{Id, V2}
-import galaxy.game.bodies.{BodyType, OrbitalState, SystemNode}
+import galaxy.game.bodies.{BodyType, OrbitalState, StarSystem, SystemNode}
+import galaxy.game.ships.ShipPosition
 import galaxy.rendering._
 
 import org.lwjgl.glfw.GLFW._
@@ -15,23 +16,14 @@ object SystemMap {
     val selectedStarSystem = gs.starSystems(rc.appState.uiState.selectedStarSystem)
     val orbitalStates = selectedStarSystem.rootNode.orbitalStatesAt(gs.time)
 
+    nvgTextAlign(rc.nvg, NVG_ALIGN_TOP | NVG_ALIGN_CENTER)
     nvgFontSize(rc.nvg, 16)
-    renderNode(selectedStarSystem.rootNode, orbitalStates, parentCenterOnScreen = None)
 
-    val camera = rc.appState.uiState.camera
-    selectedStarSystem.jumpPoints.foreach { jumpPoint =>
-      val destination = gs.starSystems(jumpPoint.destination)
-      val center = camera.pointToScreen(jumpPoint.position).map(_.toFloat)
-      nvgBeginPath(rc.nvg)
-      nvgRect(rc.nvg, center.x - 4, center.y - 4, 8, 8)
-      nvgStrokeColor(rc.nvg, Colors.jumpPoint)
-      nvgStroke(rc.nvg)
+    renderNode(selectedStarSystem, selectedStarSystem.rootNode, orbitalStates, parentCenterOnScreen = None)
+    renderJumpPoints(selectedStarSystem)
+    renderShipsInSpace(selectedStarSystem)
 
-      nvgFillColor(rc.nvg, Colors.text)
-      nvgTextAlign(rc.nvg, NVG_ALIGN_TOP | NVG_ALIGN_CENTER)
-      nvgText(rc.nvg, center.x, center.y + 8, destination.name)
-      nvgTextAlign(rc.nvg, NVG_ALIGN_LEFT | NVG_ALIGN_BASELINE)
-    }
+    nvgTextAlign(rc.nvg, NVG_ALIGN_LEFT | NVG_ALIGN_BASELINE)
 
     handleEvents()
   }
@@ -67,6 +59,7 @@ object SystemMap {
     }
 
   private def renderNode(
+    starSystem: StarSystem,
     systemNode: SystemNode,
     orbitalStates: Map[Id[SystemNode], OrbitalState],
     parentCenterOnScreen: Option[V2[Float]]
@@ -95,9 +88,26 @@ object SystemMap {
 
         if (!small) {
           nvgFillColor(rc.nvg, Colors.text)
-          nvgText(rc.nvg, bodyCenter.x - 8, bodyCenter.y + 24, systemNode.body.name)
+          nvgText(rc.nvg, bodyCenter.x, bodyCenter.y + 8, systemNode.body.name)
 
-          systemNode.children.foreach(renderNode(_, orbitalStates, Some(bodyCenter)))
+          systemNode.children.foreach(renderNode(starSystem, _, orbitalStates, Some(bodyCenter)))
+        }
+
+        {
+          val ships = starSystem.ships.values.filter { ship =>
+            ship.position match {
+              case ShipPosition.AtNode(systemNode.id) => true
+              case _ => false
+            }
+          }.toVector
+          if (ships.nonEmpty) {
+            renderShip(bodyCenter)
+          }
+          ships.zipWithIndex.foreach {
+            case (ship, index) =>
+              nvgFillColor(rc.nvg, Colors.text)
+              nvgText(rc.nvg, bodyCenter.x, bodyCenter.y + (index + 1.5f) * 16, ship.name)
+          }
         }
     }
 
@@ -112,5 +122,46 @@ object SystemMap {
       nvgStroke(rc.nvg)
       nvgResetTransform(rc.nvg)
     }
+  }
+
+  private def renderJumpPoints(starSystem: StarSystem)(implicit rc: RenderContext[AppState]): Unit = {
+    val gs = rc.appState.gameState
+    val camera = rc.appState.uiState.camera
+
+    starSystem.jumpPoints.foreach { jumpPoint =>
+      val destination = gs.starSystems(jumpPoint.destination)
+      val center = camera.pointToScreen(jumpPoint.position).map(_.toFloat)
+      nvgBeginPath(rc.nvg)
+      nvgRect(rc.nvg, center.x - 4, center.y - 4, 8, 8)
+      nvgStrokeColor(rc.nvg, Colors.jumpPoint)
+      nvgStroke(rc.nvg)
+
+      nvgFillColor(rc.nvg, Colors.text)
+      nvgText(rc.nvg, center.x, center.y + 8, destination.name)
+    }
+  }
+
+  private def renderShipsInSpace(starSystem: StarSystem)(implicit rc: RenderContext[AppState]): Unit = {
+    val camera = rc.appState.uiState.camera
+    starSystem.ships.values.foreach { ship =>
+      ship.position match {
+        case ShipPosition.InSpace(position) =>
+          val center = camera.pointToScreen(position).map(_.toFloat)
+          renderShip(center)
+          nvgFillColor(rc.nvg, Colors.text)
+          nvgText(rc.nvg, center.x, center.y + 8, ship.name)
+        case _ => ()
+      }
+    }
+  }
+
+  private def renderShip(center: V2[Float])(implicit rc: RenderContext[AppState]): Unit = {
+    nvgBeginPath(rc.nvg)
+    nvgTranslate(rc.nvg, center.x, center.y)
+    nvgScale(rc.nvg, 8, -8)
+    Paths.ship.draw(rc.nvg)
+    nvgResetTransform(rc.nvg)
+    nvgStrokeColor(rc.nvg, Colors.ship)
+    nvgStroke(rc.nvg)
   }
 }

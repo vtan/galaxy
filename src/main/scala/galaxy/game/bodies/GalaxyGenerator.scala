@@ -1,6 +1,7 @@
 package galaxy.game.bodies
 
 import galaxy.common.{Id, V2}
+import galaxy.game.ships.{Ship, ShipPosition}
 
 import scala.collection.immutable.LazyList
 import scala.util.Random
@@ -29,7 +30,8 @@ object GalaxyGenerator {
           name = name,
           position = position,
           rootNode = rootNode,
-          jumpPoints = Vector.empty
+          jumpPoints = Vector.empty,
+          ships = Map.empty
         )
     }
 
@@ -38,7 +40,11 @@ object GalaxyGenerator {
       name = "Sol",
       position = V2.zero,
       rootNode = SolarSystem.rootSystemNode,
-      jumpPoints = Vector.empty
+      jumpPoints = Vector.empty,
+      ships = Seq(
+        Ship(Id(0), "Nabuchodonozor", ShipPosition.AtNode(Id(0))),
+        Ship(Id(1), "Nabuchodonozor", ShipPosition.AtNode(Id(2)))
+      ).map(x => x.id -> x).toMap,
     )
 
     addJumpPoints(sol +: starSystems)
