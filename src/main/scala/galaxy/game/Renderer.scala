@@ -30,7 +30,12 @@ object Renderer {
       nvgFill(rc.nvg)
     }
 
-    rc.dispatch(_.mapGameState(StepLogic.stepTime))
+    rc.appState.uiState.updateSpeed match {
+      case Some(timeStep) =>
+        rc.dispatch(_.mapGameState(StepLogic.stepTime(timeStep)))
+      case None =>
+        ()
+    }
   }
 
   private def frame(f: => Unit)(implicit rc: RenderContext[_]): Unit = {

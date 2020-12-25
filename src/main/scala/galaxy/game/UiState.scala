@@ -2,8 +2,10 @@ package galaxy.game
 
 import galaxy.common.{Camera, Id, V2}
 import galaxy.game.bodies.StarSystem
+import galaxy.game.dimensions.TimeDiff
 
 final case class UiState(
+  updateSpeed: Option[TimeDiff],
   selectedStarSystem: Id[StarSystem],
   systemMapOpen: Boolean,
   camera: Camera,
@@ -14,6 +16,7 @@ final case class UiState(
 
 object UiState {
   def initial(screenSize: V2[Double]): UiState = UiState(
+    updateSpeed = None,
     selectedStarSystem = Id(0),
     systemMapOpen = false,
     camera = Camera(

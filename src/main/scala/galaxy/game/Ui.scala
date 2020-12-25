@@ -52,7 +52,7 @@ object Ui {
     timeOptions.zipWithIndex.foreach {
       case ((label, speed), index) =>
         rc.layoutContext.cursor = Rect(V2(rc.screenSize.x - 8 - 6 * 60 + index.toDouble * 60, 8), V2(60, 24))
-        Button[AppState](label, _.mapGameState(_.copy(updateSpeed = speed)))
+        Button[AppState](label, _.mapUiState(_.copy(updateSpeed = speed)))
     }
     rc.layoutContext.cursor = Rect(V2(1540, 8 + 24 + 8), V2(120, 24))
     Label(rc.appState.gameState.time.toString)
