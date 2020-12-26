@@ -20,6 +20,7 @@ val arch = {
 val natives = "natives-" + arch
 
 libraryDependencies ++= Vector(
+  "com.softwaremill.quicklens" %% "quicklens" % "1.6.1",
   "org.lwjgl" % "lwjgl" % lwjglVersion,
   "org.lwjgl" % "lwjgl" % lwjglVersion classifier natives,
   "org.lwjgl" % "lwjgl-glfw" % lwjglVersion,

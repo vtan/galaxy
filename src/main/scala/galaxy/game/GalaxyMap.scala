@@ -5,53 +5,68 @@ import galaxy.common.V2
 import galaxy.game.bodies.BodyType
 import galaxy.rendering._
 
+import com.softwaremill.quicklens._
 import org.lwjgl.glfw.GLFW._
 import org.lwjgl.nanovg.NanoVG._
 
 object GalaxyMap {
 
   def render()(implicit rc: RenderContext[AppState]): Unit = {
+    nvgTextAlign(rc.nvg, NVG_ALIGN_TOP | NVG_ALIGN_CENTER)
     renderStars()
+    nvgTextAlign(rc.nvg, NVG_ALIGN_LEFT | NVG_ALIGN_BASELINE)
+
     handleEvents()
   }
 
   private def renderStars()(implicit rc: RenderContext[AppState]): Unit = {
     val gs = rc.appState.gameState
     val camera = rc.appState.uiState.galaxyCamera
+    val small = camera.worldToScreenScale < 7
+    val boundingRect = camera.worldBoundingRect(rc.screenSize.map(_.toDouble))
 
-    {
+    if (!small) {
       val selectedStarSystem = gs.starSystems(rc.appState.uiState.selectedStarSystem)
-      val center = camera.pointToScreen(selectedStarSystem.position).map(_.toFloat)
-      nvgBeginPath(rc.nvg)
-      nvgCircle(rc.nvg, center.x, center.y, 32)
-      nvgStrokeColor(rc.nvg, Colors.text)
-      nvgStroke(rc.nvg)
+      if (boundingRect.contains(selectedStarSystem.position)) {
+        val center = camera.pointToScreen(selectedStarSystem.position).map(_.toFloat)
+        nvgBeginPath(rc.nvg)
+        nvgCircle(rc.nvg, center.x, center.y, 32)
+        nvgStrokeColor(rc.nvg, Colors.ship)
+        nvgStroke(rc.nvg)
+      }
     }
 
     nvgFontSize(rc.nvg, 16)
     gs.starSystems.values.foreach { starSystem =>
-      val center = camera.pointToScreen(starSystem.position).map(_.toFloat)
-      nvgBeginPath(rc.nvg)
-      nvgTranslate(rc.nvg, center.x, center.y)
-      nvgScale(rc.nvg, 12, 12)
-      Paths.star.draw(rc.nvg)
-      nvgResetTransform(rc.nvg)
-      nvgStrokeColor(rc.nvg, Colors.bodyColors(BodyType.Star))
-      nvgStroke(rc.nvg)
+      if (boundingRect.contains(starSystem.position)) {
+        val center = camera.pointToScreen(starSystem.position).map(_.toFloat)
+        nvgBeginPath(rc.nvg)
+        if (small) {
+          nvgRect(rc.nvg, center.x, center.y, 1, 1)
+        } else {
+          nvgTranslate(rc.nvg, center.x, center.y)
+          nvgScale(rc.nvg, 12, 12)
+          Paths.star.draw(rc.nvg)
+          nvgResetTransform(rc.nvg)
+        }
+        nvgStrokeColor(rc.nvg, Colors.bodyColors(BodyType.Star))
+        nvgStroke(rc.nvg)
 
-      nvgFillColor(rc.nvg, Colors.text)
-      nvgTextAlign(rc.nvg, NVG_ALIGN_TOP | NVG_ALIGN_CENTER)
-      nvgText(rc.nvg, center.x, center.y + 8, starSystem.name)
-      nvgTextAlign(rc.nvg, NVG_ALIGN_LEFT | NVG_ALIGN_BASELINE)
+        if (!small) {
+          nvgFillColor(rc.nvg, if (starSystem.visited) Colors.text else Colors.faintLabel)
+          nvgText(rc.nvg, center.x, center.y + 8, starSystem.name)
+        }
 
-      starSystem.jumpPoints.foreach { jumpPont =>
-        if (jumpPont.destination.asLong > starSystem.id.asLong) {
-          val other = camera.pointToScreen(gs.starSystems(jumpPont.destination).position).map(_.toFloat)
-          nvgBeginPath(rc.nvg)
-          nvgMoveTo(rc.nvg, center.x, center.y)
-          nvgLineTo(rc.nvg, other.x, other.y)
-          nvgStrokeColor(rc.nvg, Colors.jumpLine)
-          nvgStroke(rc.nvg)
+        starSystem.jumpPoints.foreach { jumpPoint =>
+          val destination = gs.starSystems(jumpPoint.destination)
+          if (destination.visited) {
+            val other = camera.pointToScreen(destination.position).map(_.toFloat)
+            nvgBeginPath(rc.nvg)
+            nvgMoveTo(rc.nvg, center.x, center.y)
+            nvgLineTo(rc.nvg, other.x, other.y)
+            nvgStrokeColor(rc.nvg, Colors.jumpLine)
+            nvgStroke(rc.nvg)
+          }
         }
       }
     }
@@ -81,6 +96,11 @@ object GalaxyMap {
           draggingGalaxyCamera = true,
           selectedStarSystem = clickedStarSystem.fold(rc.appState.uiState.selectedStarSystem)(_.id)
         )))
+        clickedStarSystem match {
+          case Some(starSystem) =>
+            rc.dispatch(_.modify(_.gameState.starSystems.index(starSystem.id).visited).setTo(true))
+          case None => ()
+        }
 
       case MouseButtonEvent(GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, _, _, _) =>
         rc.dispatch(_.mapUiState(_.copy(draggingGalaxyCamera = false)))

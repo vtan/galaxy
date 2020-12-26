@@ -8,7 +8,7 @@ import scala.util.Random
 
 object GalaxyGenerator {
 
-  private val radius: Int = 10
+  private val radius: Int = 20
 
   def generate(implicit random: Random): Map[Id[StarSystem], StarSystem] = {
     val radiusSq = radius * radius
@@ -31,6 +31,7 @@ object GalaxyGenerator {
           position = position,
           rootNode = rootNode,
           jumpPoints = Vector.empty,
+          visited = false,
           ships = Map.empty
         )
     }
@@ -41,6 +42,7 @@ object GalaxyGenerator {
       position = V2.zero,
       rootNode = SolarSystem.rootSystemNode,
       jumpPoints = Vector.empty,
+      visited = true,
       ships = Seq(
         Ship(Id(0), "Nabuchodonozor", ShipPosition.AtNode(Id(0))),
         Ship(Id(1), "Nabuchodonozor", ShipPosition.AtNode(Id(2)))

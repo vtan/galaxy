@@ -9,5 +9,6 @@ final case class StarSystem(
   position: V2[Double],
   rootNode: SystemNode,
   jumpPoints: Vector[JumpPoint],
+  visited: Boolean,
   ships: Map[Id[Ship], Ship]
 )

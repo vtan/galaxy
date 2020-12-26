@@ -21,4 +21,10 @@ final case class Camera(
 
   def screenToPoint(point: V2[Double]): V2[Double] =
     worldPosition + (point - screenCenter) / worldToScreenScaleVector
+
+  def worldBoundingRect(screenSize: V2[Double]): Rect[Double] =
+    Rect(
+      position = screenToPoint(V2(0, screenSize.y)),
+      size = (1 / worldToScreenScale) *: screenSize
+    )
 }
