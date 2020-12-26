@@ -2,10 +2,11 @@ package galaxy.game
 
 import galaxy.clamp
 import galaxy.common.{Id, V2}
-import galaxy.game.bodies.{BodyType, OrbitalState, StarSystem, SystemNode}
+import galaxy.game.bodies.{BodyType, GlobalNodeId, OrbitalState, StarSystem, SystemNode}
 import galaxy.game.ships.ShipPosition
 import galaxy.rendering._
 
+import com.softwaremill.quicklens._
 import org.lwjgl.glfw.GLFW._
 import org.lwjgl.nanovg.NanoVG._
 
@@ -25,10 +26,13 @@ object SystemMap {
 
     nvgTextAlign(rc.nvg, NVG_ALIGN_LEFT | NVG_ALIGN_BASELINE)
 
-    handleEvents()
+    handleEvents(selectedStarSystem, orbitalStates)
   }
 
-  private def handleEvents()(implicit rc: RenderContext[AppState]): Unit =
+  private def handleEvents(
+    starSystem: StarSystem,
+    orbitalStates: Map[Id[SystemNode], OrbitalState]
+  )(implicit rc: RenderContext[AppState]): Unit =
     rc.events.foreach {
       case CursorPositionEvent(_, _, xDiff, yDiff) =>
         rc.dispatch(_.mapUiState { ui =>
@@ -41,8 +45,21 @@ object SystemMap {
           }
         })
 
-      case MouseButtonEvent(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, _, _, _) =>
+      case MouseButtonEvent(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, _, x, y) =>
         rc.dispatch(_.mapUiState(_.copy(draggingCamera = true)))
+
+        val camera = rc.appState.uiState.camera
+        val clickInWorld = camera.screenToPoint(V2(x, y))
+        val distanceThreshold = camera.screenToScalar(16)
+        val clickedNode = starSystem.rootNode.breadthFirstSeq.find { node =>
+          (orbitalStates(node.id).position - clickInWorld).lengthSq <= distanceThreshold * distanceThreshold
+        }
+        clickedNode match {
+          case Some(node) =>
+            val globalNodeId = GlobalNodeId(rc.appState.uiState.selectedStarSystem, node.id)
+            rc.dispatch(_.modify(_.uiState.selectedSystemNode).setTo(globalNodeId))
+          case None => ()
+        }
 
       case MouseButtonEvent(GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, _, _, _) =>
         rc.dispatch(_.mapUiState(_.copy(draggingCamera = false)))

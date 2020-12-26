@@ -11,4 +11,7 @@ final case class StarSystem(
   jumpPoints: Vector[JumpPoint],
   visited: Boolean,
   ships: Map[Id[Ship], Ship]
-)
+) {
+  lazy val nodesById: Map[Id[SystemNode], SystemNode] =
+    Map.from(rootNode.treeIterator.map(n => n.id -> n))
+}

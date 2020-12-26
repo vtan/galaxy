@@ -31,7 +31,15 @@ object Ui {
         gs.copy(starSystems = gs.starSystems + (starSystem.id -> starSystem.copy(rootNode = newRoot)))
       })
 
-      rc.layoutContext.cursor = Rect(V2(8, 8 + 32), V2(120, 24))
+      rc.layoutContext.cursor = Rect(V2(8, 8 + 24 + 8), V2(120, 24))
+      val selectedSystemNode = {
+        val globalNode = rc.appState.uiState.selectedSystemNode
+        val starSystem = rc.appState.gameState.starSystems(globalNode.starSystemId)
+        starSystem.nodesById(globalNode.systemNodeId)
+      }
+      Label("Selected: " + selectedSystemNode.body.name)
+
+      rc.layoutContext.cursor = Rect(V2(8, 8 + 24 + 8 + 32), V2(120, 24))
       SystemList.render()
     } else {
       rc.layoutContext.cursor = Rect(V2(8, 8), V2(120, 24))
